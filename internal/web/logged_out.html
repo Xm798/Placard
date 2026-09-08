@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{.Title}}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316150f'/%3E%3Ctext x='16' y='21' font-family='ui-monospace,monospace' font-size='13' font-weight='bold' fill='%23fafaf8' text-anchor='middle'%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E">
+<!-- F3: zero external subresources; system font stack only. No JavaScript, so
+     nothing here can start a fresh login on its own. Dark mode via CSS media
+     query (no JS needed under CSP script-src 'self'). -->
+<style>
+:root{--bg:#fafaf8;--surface:#fff;--fg:#16150f;--fg-soft:#6b6960;--line-strong:#d4d2c8;--ink:#16150f;--ink-fg:#fafaf8;}
+@media (prefers-color-scheme:dark){:root{--bg:#0e0e0c;--surface:#181814;--fg:#f3f2ea;--fg-soft:#a3a195;--line-strong:#34332b;--ink:#f3f2ea;--ink-fg:#16150f;}}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:32px;-webkit-font-smoothing:antialiased;}
+.card{text-align:center;max-width:420px;}
+.mark{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:18px;background:var(--ink);color:var(--ink-fg);margin-bottom:20px;}
+.title{font-weight:800;font-size:26px;letter-spacing:-.02em;margin:0 0 8px;}
+.sub{color:var(--fg-soft);font-size:14px;line-height:1.6;margin:0 0 24px;}
+.btn{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;border:1px solid var(--line-strong);background:var(--ink);color:var(--ink-fg);}
+</style>
+</head>
+<body>
+<div class="card">
+<span class="mark" aria-hidden="true">&lt;/&gt;</span>
+<h1 class="title">{{.Heading}}</h1>
+<p class="sub">{{.Body}}</p>
+<a class="btn" href="/login">{{.Action}}</a>
+</div>
+</body>
+</html>

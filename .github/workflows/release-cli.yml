@@ -1,0 +1,56 @@
+name: Release CLI
+
+# CLI releases live in their own tag namespace so the CLI and the server ship
+# independently; plain `vX.Y.Z` tags belong to release-server.yml.
+on:
+  push:
+    tags: ["cli/v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      # goreleaser cannot parse `cli/v1.2.3` as semver, so .goreleaser.cli.yml
+      # takes the version from CLI_VERSION and publishes nothing itself — see
+      # its header.
+      - id: version
+        run: echo "cli=${GITHUB_REF_NAME#cli/v}" >> "$GITHUB_OUTPUT"
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "~> v2"
+          args: release --snapshot --clean -f .goreleaser.cli.yml
+        env:
+          CLI_VERSION: ${{ steps.version.outputs.cli }}
+      # The release is created here because goreleaser is in snapshot mode.
+      # Only the binaries and checksums.txt are uploaded: goreleaser also
+      # leaves its own metadata (artifacts.json, config.yaml) in dist/.
+      # A version carrying a prerelease identifier ships as a GitHub
+      # prerelease, which is what keeps install.sh — it takes the newest stable
+      # cli/v tag — from handing it to everyone.
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLI_VERSION: ${{ steps.version.outputs.cli }}
+        run: |
+          prerelease=""
+          case "$CLI_VERSION" in
+            *-*) prerelease="--prerelease" ;;
+          esac
+          gh release create "$GITHUB_REF_NAME" \
+            --title "CLI $CLI_VERSION" \
+            --generate-notes \
+            $prerelease \
+            dist/placard-* dist/checksums.txt

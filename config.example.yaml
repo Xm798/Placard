@@ -1,0 +1,141 @@
+# Placard server configuration.
+#
+# Every key here is optional: started with no config file at all, the server
+# creates ./data/, opens a SQLite database in it, and listens on :8080. Copy
+# this file to config.yaml (or point PLACARD_CONFIG / --config at it) and set
+# only what you want to change.
+#
+# Any scalar key can also be set through the environment as PLACARD_ plus the
+# key upper-cased with dots replaced by underscores: PLACARD_SERVER_PORT,
+# PLACARD_DATABASE_DRIVER, PLACARD_STORAGE_S3_BUCKET. An environment variable
+# wins over the value here. The string-list keys (server.trusted_proxies,
+# csrf.allowed_origins, cors.allowed_origins) take a comma-separated value;
+# auth.oidc holds objects and can only be set in this file.
+# String values may reference the environment as ${VAR}, naming any variable —
+# those are read as written, without the prefix.
+
+# Root of everything the instance writes: <data_dir>/placard.db,
+# <data_dir>/objects, <data_dir>/secret.key.
+data_dir: ./data
+
+server:
+  port: 8080
+  # Canonical public origin, no trailing slash. Share links are built from it,
+  # and the CSRF/CORS allowlists default to it.
+  base_url: http://localhost:8080
+  # Required behind a reverse proxy: without it c.IP() resolves to the proxy,
+  # so every client shares one per-IP rate-limit bucket.
+  trusted_proxies: []
+  # 32-byte instance secret (hex). Generated into <data_dir>/secret.key on the
+  # first start when left empty. Changing it invalidates every personal access
+  # token.
+  secret_key: ""
+  # Oldest placard CLI this instance answers, e.g. "1.2.0". Empty checks
+  # nothing; an older CLI otherwise gets 426 and an upgrade message.
+  min_cli_version: ""
+
+database:
+  # sqlite (default) or postgres.
+  driver: sqlite
+  # postgres only; sqlite uses <data_dir>/placard.db unless sqlite.path is set.
+  dsn: ""
+  # sqlite:
+  #   path: /var/lib/placard/placard.db
+  auto_migrate: true
+
+storage:
+  # local (a directory on disk) or s3 (AWS S3, Cloudflare R2, MinIO).
+  type: local
+  # local:
+  #   dir: /var/lib/placard/objects
+  # s3:
+  #   endpoint: ""        # empty for AWS S3; set for R2 / MinIO
+  #   region: auto        # "auto" for Cloudflare R2
+  #   bucket: placard
+  #   access_key: ${S3_ACCESS_KEY}
+  #   secret_key: ${S3_SECRET_KEY}
+  #   path_style: false   # required by MinIO
+
+# Optional. With addr empty (the default) the server needs no Redis at all:
+# sessions and CLI device flows live in the database, and the rate-limit
+# counters and cleanup-cron lock live in the process. Set addr to run more than
+# one replica — without a shared Redis each replica keeps its own sessions,
+# rate-limit budget and cron.
+# redis:
+#   addr: 127.0.0.1:6379
+#   password: ""
+#   db: 0
+
+auth:
+  # Seeds the instance settings on the FIRST start only; from then on the
+  # database is authoritative and an admin edits these from /admin, so changing
+  # them here later has no effect.
+  #
+  # An instance with no accounts always accepts its first registration and makes
+  # that account the administrator, whatever this says — otherwise a fresh
+  # install could never reach the switch.
+  registration_open: false
+  # Whether an OIDC login for an unknown subject creates an account.
+  oidc_auto_provision: true
+  # session:
+  #   idle_ttl: 168h      # sliding, refreshed on every request
+  #   absolute_ttl: 720h  # hard cap, measured from sign-in
+
+  # Single sign-on. Every provider with an OpenID Connect discovery document
+  # works; there are no per-vendor presets. Each entry adds one button to the
+  # login page and one linkable identity to the settings page.
+  #
+  # Register this exact redirect URI with the provider:
+  #     <server.base_url>/auth/oidc/callback
+  #
+  # name is stored on every linked identity, so renaming it later orphans them.
+  # scopes defaults to [openid, profile, email].
+  #
+  # An SSO login whose provider reports email_verified is linked to an existing
+  # account with the same address. Placard does not verify addresses typed into
+  # local registration, so leaving registration_open ON alongside SSO lets
+  # anyone register while claiming an address they do not own and receive that
+  # person's SSO login. Keep registration closed on an SSO instance.
+  # oidc:
+  #   - name: corp
+  #     display_name: Company SSO
+  #     issuer: https://sso.example.com/realms/main
+  #     client_id: placard
+  #     client_secret: ${OIDC_CLIENT_SECRET}
+  #     scopes: [openid, profile, email]
+
+# ratelimit:
+#   uploads_per_hour: 50         # per user
+#   auth_per_minute: 30          # per IP, every sign-in / registration attempt
+#   auth_fail_per_minute: 20     # per IP, failed attempts only
+#   anon_render_per_minute: 120  # per IP, share-link requests from visitors who are
+#                                # not signed in; one page view spends three
+#   share_code_fail_per_minute: 10  # per page per IP, wrong share codes only
+
+# upload:
+#   max_file_size: 10485760    # seeds the setting table; admins change it from /admin
+
+# An account with no provider picture falls back to the Gravatar for its email
+# address, and one with neither to its initial letter in the UI. Turning this
+# off stops the server from sending a hash of any user's address to Gravatar.
+# avatar:
+#   gravatar_fallback: true
+
+# Human-readable console on stdout is always a sink — it is what `docker logs`
+# and journalctl show. Naming a file adds a second, JSON-encoded copy there,
+# rotated by the settings below. The default path is relative, so under Docker
+# (which runs from /data) it lands in the volume.
+# log:
+#   level: info                  # debug / info / warn / error
+#   file: ./logs/placard.log
+#   max_size: 100                # MB per file before rotation
+#   max_backups: 5
+#   max_age: 30                  # days
+#   compress: true
+
+# Both allowlists default to server.base_url. Set them only when the UI is
+# served from more than one origin.
+# csrf:
+#   allowed_origins: [https://placard.example.com]
+# cors:
+#   allowed_origins: [https://placard.example.com]

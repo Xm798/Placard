@@ -1,0 +1,65 @@
+# goreleaser config for the Placard server (the module root main package).
+#
+# The server ships under plain `vX.Y.Z` tags, which goreleaser parses as semver,
+# so unlike the CLI config this one publishes the GitHub release itself.
+#
+# Invoke as:  goreleaser release --clean -f .goreleaser.server.yml
+version: 2
+project_name: placard
+
+# The server binary embeds the frontend through //go:embed all:dist, so the
+# bundle must exist before the Go build. Without this the release would ship a
+# server whose only asset is dist/.gitkeep.
+before:
+  hooks:
+    - make frontend-install
+    - make frontend
+
+builds:
+  - id: server
+    # MUST be pinned. Without it goreleaser also builds ./cmd/placard and ships
+    # the CLI under the server's tag.
+    main: ./
+    binary: placard-server
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+    flags:
+      # -trimpath belongs in builds.flags. Putting it in ldflags does NOT error,
+      # it is silently ignored.
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/Xm798/placard/internal/version.Version={{ .Version }}
+      - -X github.com/Xm798/placard/internal/version.BuildTime={{ .Date }}
+      - -X github.com/Xm798/placard/internal/version.GitCommit={{ .ShortCommit }}
+      # Tag pipelines run detached, so this can be "HEAD" rather than a branch
+      # name. version.Public() only special-cases the literal "master", so a
+      # detached build reports the plain version.
+      - -X github.com/Xm798/placard/internal/version.GitBranch={{ .Branch }}
+
+archives:
+  - id: server
+    formats: [tar.gz]
+    name_template: 'placard-server-{{ .Version }}-{{ .Os }}-{{ if eq .Arch "amd64" }}x64{{ else }}{{ .Arch }}{{ end }}'
+    files:
+      - LICENSE
+      - config.example.yaml
+
+checksum:
+  name_template: "checksums.txt"
+
+changelog:
+  use: github
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+release:
+  # A tag carrying a prerelease identifier (v1.2.3-rc.1) is published as a
+  # GitHub prerelease, which is also what keeps the CLI installer — it takes the
+  # newest stable release — from ever offering it.
+  prerelease: auto

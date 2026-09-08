@@ -1,0 +1,59 @@
+# goreleaser config for the Placard CLI (cmd/placard).
+#
+# The CLI ships under its own tag namespace `cli/vX.Y.Z` so it does not collide
+# with the server's own `vX.Y.Z` tags. goreleaser CANNOT parse that tag:
+#   `failed to parse tag 'cli/v1.2.3' as semver`
+# and native tag-prefix support (monorepo.tag_prefix) is a Pro-only feature.
+#
+# Therefore goreleaser never looks at the tag at all:
+#   * release.disable  -> goreleaser publishes nothing; the release job does
+#   * always --snapshot -> version comes from snapshot.version_template
+#   * version_template  -> reads $CLI_VERSION, which CI sets to ${CI_COMMIT_TAG#cli/v}
+#
+# ALWAYS invoke as:
+#   CLI_VERSION=1.2.3 goreleaser release --snapshot --clean -f .goreleaser.cli.yml
+# Forgetting CLI_VERSION fails the template — there is no fallback by design.
+version: 2
+project_name: placard
+
+builds:
+  - id: cli
+    # MUST be pinned. Without it goreleaser also builds the server main at the
+    # repo root and ships it as a release artifact.
+    main: ./cmd/placard
+    binary: 'placard-{{ .Version }}-{{ .Os }}-{{ if eq .Arch "amd64" }}x64{{ else }}{{ .Arch }}{{ end }}'
+    no_unique_dist_dir: true
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+    flags:
+      # -trimpath belongs in builds.flags. Putting it in ldflags does NOT error,
+      # it is silently ignored.
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/Xm798/placard/internal/version.Version={{ .Version }}
+      - -X github.com/Xm798/placard/internal/version.BuildTime={{ .Date }}
+      - -X github.com/Xm798/placard/internal/version.GitCommit={{ .ShortCommit }}
+      # Tag pipelines run detached, so this can be "HEAD" rather than a branch
+      # name. Harmless: the CLI never reads GitBranch (it must not call
+      # version.Public(), see spec §8.2).
+      - -X github.com/Xm798/placard/internal/version.GitBranch={{ .Branch }}
+
+archives:
+  # Ship bare binaries, no tar.gz: install.sh is then a single curl -o.
+  - formats: [binary]
+    name_template: "{{ .Binary }}"
+
+checksum:
+  # `<sha256>  <name>` with TWO spaces — install.sh/install.ps1/updater all
+  # depend on this exact format.
+  name_template: "checksums.txt"
+
+release:
+  # The tag is cli/vX.Y.Z, which is not semver, so the release job publishes.
+  disable: true
+
+snapshot:
+  version_template: "{{ .Env.CLI_VERSION }}"

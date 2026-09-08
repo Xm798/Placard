@@ -1,0 +1,44 @@
+.claude/
+
+# Build artifacts
+/placard
+/placard-server
+/main
+*.exe
+
+# goreleaser output (repo root). Note the existing frontend/dist and
+# /internal/web/dist/* rules do NOT cover this path.
+/dist/
+
+# Local runtime state (logs, sqlite dev db, local object storage)
+logs/
+*.log
+*.db
+data/
+
+# Online env-import files
+configs/*.json
+.env
+.env.local
+
+# Local-only vendored deps / SDK sources (not part of this module)
+/external/
+
+# Frontend build (React/Vite) — dist is embedded at build time, not committed
+frontend/node_modules
+frontend/dist
+/internal/web/dist/*
+!/internal/web/dist/.gitkeep
+
+# Local scratch / throwaway
+tmp/
+
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.e2e-tmp/
+
+# Local server config (config.example.yaml is the committed template)
+/config.yaml

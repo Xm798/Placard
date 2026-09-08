@@ -1,0 +1,78 @@
+# The official image, zero configuration: one container, SQLite and local
+# object storage inside the placard_data volume.
+#
+#   docker compose up -d          # http://localhost:8080
+#
+# Any SCALAR key of config.yaml can be set here as an environment variable:
+# PLACARD_, then the key upper cased with dots replaced by underscores
+# (PLACARD_SERVER_PORT, PLACARD_DATABASE_DRIVER, PLACARD_STORAGE_S3_BUCKET).
+# The string-list keys take a comma-separated value; auth.oidc holds objects and
+# has no environment encoding at all, so configuring single sign-on needs a
+# config.yaml mounted at /data/config.yaml, which the server picks up on its
+# own. An environment variable set here wins over the same key in that file,
+# including the PLACARD_DATA_DIR the image sets.
+#
+# Postgres and Redis are optional and commented out below. The development
+# stack that `make test-integration` runs against is a separate file,
+# docker-compose.dev.yaml.
+
+services:
+  placard:
+    image: ghcr.io/xm798/placard:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # The canonical public origin, no trailing slash: share links are built
+      # from it, so behind a domain or a reverse proxy this MUST be the URL
+      # browsers use, not localhost.
+      PLACARD_SERVER_BASE_URL: http://localhost:8080
+      # PLACARD_DATABASE_DRIVER: postgres
+      # PLACARD_DATABASE_DSN: host=postgres port=5432 user=placard password=placard dbname=placard sslmode=disable TimeZone=UTC
+      # PLACARD_REDIS_ADDR: redis:6379
+    volumes:
+      - placard_data:/data
+    # The server logs to stdout as well as to /data/logs/placard.log. The file
+    # copy is capped by the server itself; this caps what the daemon keeps of
+    # the stream, which json-file otherwise grows without limit.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
+
+  # Postgres — the alternative to the built-in SQLite database. Uncomment this
+  # block together with PLACARD_DATABASE_DRIVER / PLACARD_DATABASE_DSN above.
+  # postgres:
+  #   image: postgres:16-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: placard
+  #     POSTGRES_USER: placard
+  #     POSTGRES_PASSWORD: placard
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U placard -d placard"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 20
+
+  # Redis — needed only to run more than one replica: it is what makes
+  # sessions, CLI device flows, rate-limit counters and the cleanup cron lock
+  # shared instead of per-process. Uncomment together with PLACARD_REDIS_ADDR above.
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 20
+
+volumes:
+  placard_data: {}
+  # postgres_data: {}

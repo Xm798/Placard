@@ -1,0 +1,85 @@
+name: Release server
+
+# Server releases are the plain `vX.Y.Z` tags; `cli/vX.Y.Z` belongs to
+# release-cli.yml. The two ship independently from one repository.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  binaries:
+    name: Binaries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # goreleaser derives the version and changelog from tag history.
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "~> v2"
+          args: release --clean -f .goreleaser.server.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      # Both build stages run on the native runner and cross-compile, so
+      # linux/arm64 needs buildx but no QEMU emulation.
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          # Literal, not ${{ github.repository }}: a registry path must be
+          # lowercase all through, and the repository is Xm798/Placard.
+          images: ghcr.io/xm798/placard
+          # The default latest=auto flavor skips a prerelease tag
+          # (v1.2.3-rc.1), so `:latest` always points at the newest stable image.
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      # The metadata the Makefile and goreleaser inject, so the binaries and
+      # the image built from one tag report the same version: the meta step's
+      # `version` output is the tag with its `v` stripped, as goreleaser does.
+      - id: build-meta
+        run: |
+          echo "commit=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            GIT_COMMIT=${{ steps.build-meta.outputs.commit }}
+            BUILD_TIME=${{ steps.build-meta.outputs.time }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

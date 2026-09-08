@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        run: make frontend-install
+      - name: Frontend tests
+        run: npm run test
+        working-directory: frontend
+      # build (which rebuilds the frontend bundle the server embeds), vet,
+      # gofmt and the SQLite unit tests.
+      - name: Gates
+        run: make gates
+
+  integration:
+    name: Integration (Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: placard
+          POSTGRES_USER: placard
+          POSTGRES_PASSWORD: placard
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U placard -d placard"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      TEST_DSN: host=127.0.0.1 port=5432 user=placard password=placard dbname=placard sslmode=disable TimeZone=UTC
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # `-tags=integration` adds the tagged tests to the untagged ones rather
+      # than replacing them, and TestAppPageServedWithCSP parses the hashed
+      # asset name out of the served index.html — so this job needs the real
+      # bundle just as much as the gates job does.
+      - name: Build frontend
+        run: make frontend-install frontend
+      - name: Integration tests
+        run: make test-integration
