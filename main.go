@@ -20,6 +20,7 @@ import (
 	appdb "github.com/Xm798/placard/internal/db"
 	"github.com/Xm798/placard/internal/devicecode"
 	"github.com/Xm798/placard/internal/handler"
+	"github.com/Xm798/placard/internal/healthcheck"
 	"github.com/Xm798/placard/internal/httpx"
 	"github.com/Xm798/placard/internal/lock"
 	"github.com/Xm798/placard/internal/logger"
@@ -45,6 +46,11 @@ func main() {
 	// server cannot be signed into at all.
 	if len(os.Args) > 1 && os.Args[1] == admincli.Name {
 		runAdminCLI(os.Args[2:])
+		return
+	}
+
+	if len(os.Args) > 1 && os.Args[1] == healthcheck.Name {
+		runHealthcheck(os.Args[2:])
 		return
 	}
 
@@ -337,6 +343,26 @@ func runAdminCLI(args []string) {
 		if !errors.Is(err, admincli.ErrUsage) && !errors.Is(err, flag.ErrHelp) {
 			fmt.Fprintln(os.Stderr, err)
 		}
+		os.Exit(1)
+	}
+}
+
+// runHealthcheck probes the server's liveness endpoint and exits 0 only when it
+// answers. It reads configuration the way the server does, so a non-default
+// server.port is honoured, and stops there: no logger, secret key or database,
+// which keeps it free of side effects in the data directory it shares with the
+// server.
+func runHealthcheck(args []string) {
+	fs := flag.NewFlagSet(healthcheck.Name, flag.ExitOnError)
+	configFlag := fs.String("config", "", "path to config file (default: $PLACARD_CONFIG, else "+config.DefaultConfigPath+")")
+	_ = fs.Parse(args)
+
+	cfg, err := config.Load(config.ResolvePath(*configFlag), config.ResolveEnv())
+	if err == nil {
+		err = healthcheck.Probe(healthcheck.URL(cfg.Server.Port), healthcheck.Timeout)
+	}
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "healthcheck:", err)
 		os.Exit(1)
 	}
 }

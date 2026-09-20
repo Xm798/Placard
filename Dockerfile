@@ -75,4 +75,9 @@ VOLUME /data
 
 EXPOSE 8080
 
+# Exec form: the runtime image has no shell. Liveness only — see the
+# healthcheck package for why readiness is not probed.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD ["/usr/local/bin/placard-server", "healthcheck"]
+
 ENTRYPOINT ["/usr/local/bin/placard-server"]

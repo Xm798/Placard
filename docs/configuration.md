@@ -116,6 +116,15 @@ Root of everything the instance writes.
   `1.2.0`. An older CLI gets HTTP 426 and an upgrade message instead of failing
   deeper in the request.
 
+### Health checks
+
+`GET /api/health` is liveness (always 200 while the process serves) and
+`GET /api/ready` is readiness (503 when the database is unreachable). The
+container image declares a `HEALTHCHECK` that runs `placard-server healthcheck`,
+which reads the same configuration as the server, requests `/api/health` on
+`server.port` and exits non-zero on failure; use it as the probe command in
+other orchestrators too (the image has no shell or curl).
+
 ## `database`
 
 | Key                       | Env                              | Default                   |
