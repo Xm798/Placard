@@ -263,6 +263,9 @@ Register this exact redirect URI with the provider:
 <server.base_url>/auth/oidc/callback
 ```
 
+Every authorization request is sent with PKCE (`S256`); there is no switch for
+it, so a provider that rejects the extra parameters cannot be used.
+
 > **Keep registration closed on an SSO instance.** An SSO login whose provider
 > reports `email_verified` is linked to an existing account with the same
 > address. Placard does not verify addresses typed into local registration, so

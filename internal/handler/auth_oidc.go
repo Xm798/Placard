@@ -76,20 +76,20 @@ func (h *Handlers) OIDCStart(c *fiber.Ctx) error {
 	if err != nil {
 		return apperr.Internal("could not start sign-in")
 	}
-	flow := &session.OIDCFlow{
-		Provider: provider.Name(),
-		State:    state,
-		Nonce:    nonce,
-		Redirect: safeRedirectPath(c.Query("redirect")),
-	}
-
-	authURL, err := provider.AuthCodeURL(c.UserContext(), state, nonce)
+	authURL, verifier, err := provider.AuthCodeURL(c.UserContext(), state, nonce)
 	if err != nil {
 		logger.Module("auth").Warn("oidc discovery failed",
 			zap.String("provider", provider.Name()), zap.Error(err))
 		return apperr.Unavailable("identity provider is unavailable")
 	}
 
+	flow := &session.OIDCFlow{
+		Provider: provider.Name(),
+		State:    state,
+		Nonce:    nonce,
+		Verifier: verifier,
+		Redirect: safeRedirectPath(c.Query("redirect")),
+	}
 	if err := h.storeFlow(c, flow); err != nil {
 		return err
 	}
@@ -180,12 +180,17 @@ func (h *Handlers) OIDCCallback(c *fiber.Ctx) error {
 	if code == "" {
 		return apperr.Validation("the identity provider returned no authorization code")
 	}
+	// A flow record written before PKCE carries no verifier and can no longer
+	// be redeemed; it is dropped here rather than at the token endpoint.
+	if flow.Verifier == "" {
+		return apperr.Validation("the sign-in attempt expired, please try again")
+	}
 
 	provider, err := h.deps.OIDC.Get(flow.Provider)
 	if err != nil {
 		return apperr.Validation("that sign-in provider is no longer configured")
 	}
-	claims, err := provider.Exchange(ctx, code, flow.Nonce)
+	claims, err := provider.Exchange(ctx, code, flow.Nonce, flow.Verifier)
 	if err != nil {
 		// One reason code for every verification failure: the distinction
 		// between a bad signature, a wrong audience and a replayed nonce is an
@@ -668,9 +673,9 @@ func newFlowSecrets() (state, nonce string, err error) {
 }
 
 // redirectMaxLen bounds a stored destination. The flow is persisted as JSON in
-// a 1024-byte column alongside a provider name and two 43-character secrets, so
-// an unbounded redirect would not fail validation — it would fail the INSERT,
-// on Postgres only, as a 503 nobody could explain.
+// a 1024-byte column alongside a provider name and three 43-character secrets,
+// so an unbounded redirect would not fail validation — it would fail the
+// INSERT, on Postgres only, as a 503 nobody could explain.
 const redirectMaxLen = 512
 
 // safeRedirectPath confines a caller-supplied post-login destination to this

@@ -37,6 +37,10 @@ type fakeIssuer struct {
 	// registered by the test before the callback is driven.
 	codes  map[string]issuedToken
 	access map[string]map[string]interface{}
+
+	// verifiers records the PKCE code_verifier each redemption sent, keyed by
+	// the code it redeemed.
+	verifiers map[string]string
 }
 
 type issuedToken struct {
@@ -51,10 +55,11 @@ func newFakeIssuer(t *testing.T) *fakeIssuer {
 		t.Fatalf("generate issuer key: %v", err)
 	}
 	f := &fakeIssuer{
-		key:     key,
-		signKey: key,
-		codes:   map[string]issuedToken{},
-		access:  map[string]map[string]interface{}{},
+		key:       key,
+		signKey:   key,
+		codes:     map[string]issuedToken{},
+		access:    map[string]map[string]interface{}{},
+		verifiers: map[string]string{},
 	}
 
 	mux := http.NewServeMux()
@@ -112,6 +117,7 @@ func (f *fakeIssuer) token(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad form", http.StatusBadRequest)
 		return
 	}
+	f.verifiers[r.PostFormValue("code")] = r.PostFormValue("code_verifier")
 	issued, ok := f.codes[r.PostFormValue("code")]
 	if !ok {
 		writeJSONStatus(w, http.StatusBadRequest, map[string]string{"error": "invalid_grant"})

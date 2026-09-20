@@ -146,7 +146,7 @@ auth:
 
 Register `https://placard.example.com/auth/oidc/callback` as the redirect URI
 with the provider. `name` is stored on every linked identity, so renaming it
-later orphans them.
+later orphans them. Authorization requests always use PKCE (`S256`).
 
 `auth.oidc` holds objects rather than strings, so it is the one key no
 environment variable reaches: an SSO instance needs a config file. Under Docker,

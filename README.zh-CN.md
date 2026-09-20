@@ -134,7 +134,8 @@ auth:
 ```
 
 在 provider 那边把 `https://placard.example.com/auth/oidc/callback` 注册为回调地址。
-`name` 会存在每条已关联的身份上，之后改名会让它们变成孤儿。
+`name` 会存在每条已关联的身份上，之后改名会让它们变成孤儿。授权请求一律使用 PKCE
+（`S256`）。
 
 `auth.oidc` 里放的是对象而非字符串，是唯一无法用环境变量表达的键，所以启用 SSO 的
 实例需要一个配置文件 —— 用 Docker 时把它放进 `/data/config.yaml`，服务端会自己找到。

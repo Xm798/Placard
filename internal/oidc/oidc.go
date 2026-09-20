@@ -120,12 +120,19 @@ func (r *Registry) Get(name string) (*Provider, error) {
 
 // AuthCodeURL is where the browser is sent to authenticate. state and nonce
 // are the caller's, stored server-side for the callback to compare against.
-func (p *Provider) AuthCodeURL(ctx context.Context, state, nonce string) (string, error) {
+//
+// The returned PKCE verifier belongs beside them: only its SHA-256 challenge
+// is sent to the provider, so an authorization code captured out of the
+// redirect is worthless to anyone who cannot also produce the flow record.
+func (p *Provider) AuthCodeURL(ctx context.Context, state, nonce string) (authURL, verifier string, err error) {
 	oauthCfg, err := p.oauthConfig(ctx)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return oauthCfg.AuthCodeURL(state, coreoidc.Nonce(nonce)), nil
+	verifier = oauth2.GenerateVerifier()
+	return oauthCfg.AuthCodeURL(state,
+		coreoidc.Nonce(nonce),
+		oauth2.S256ChallengeOption(verifier)), verifier, nil
 }
 
 // Exchange redeems the authorization code and returns the verified claims.
@@ -135,14 +142,17 @@ func (p *Provider) AuthCodeURL(ctx context.Context, state, nonce string) (string
 // verify against the provider's JWKS, and its nonce must be the one this flow
 // started with. A failure at any of those returns an error and no claims —
 // there is no partial result the caller could fall back on.
-func (p *Provider) Exchange(ctx context.Context, code, nonce string) (*Claims, error) {
+//
+// verifier is the one AuthCodeURL returned for this flow, and proves the
+// redemption comes from whoever started it.
+func (p *Provider) Exchange(ctx context.Context, code, nonce, verifier string) (*Claims, error) {
 	ctx = p.clientContext(ctx)
 	oauthCfg, err := p.oauthConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	tok, err := oauthCfg.Exchange(ctx, code)
+	tok, err := oauthCfg.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 	if err != nil {
 		return nil, fmt.Errorf("oidc: exchange code: %w", err)
 	}

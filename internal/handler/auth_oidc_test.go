@@ -2,6 +2,8 @@ package handler
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
@@ -49,10 +51,9 @@ func newOIDCApp(t *testing.T) *oidcApp {
 	return &oidcApp{localAuthApp: base, issuer: issuer}
 }
 
-// start drives GET /auth/oidc/start and returns the flow's state and nonce
-// (read back out of the authorize URL the server redirected to) plus the
-// session cookie the flow was stored on.
-func (a *oidcApp) start(t *testing.T, query string, cookie *http.Cookie) (state, nonce string, set *http.Cookie) {
+// startAuthorize drives GET /auth/oidc/start and returns the authorize URL the
+// server redirected to plus the session cookie the flow was stored on.
+func (a *oidcApp) startAuthorize(t *testing.T, query string, cookie *http.Cookie) (*url.URL, *http.Cookie) {
 	t.Helper()
 	req := httptest.NewRequest("GET", "/auth/oidc/start?provider="+testProvider+query, nil)
 	if cookie != nil {
@@ -69,12 +70,19 @@ func (a *oidcApp) start(t *testing.T, query string, cookie *http.Cookie) (state,
 	if err != nil {
 		t.Fatalf("parse authorize url: %v", err)
 	}
-	set = cookie
+	set := cookie
 	for _, c := range resp.Cookies() {
 		if c.Name == testSessionCookie {
 			set = c
 		}
 	}
+	return authURL, set
+}
+
+// start is startAuthorize reduced to the two flow secrets most tests need.
+func (a *oidcApp) start(t *testing.T, query string, cookie *http.Cookie) (state, nonce string, set *http.Cookie) {
+	t.Helper()
+	authURL, set := a.startAuthorize(t, query, cookie)
 	q := authURL.Query()
 	return q.Get("state"), q.Get("nonce"), set
 }
@@ -317,6 +325,66 @@ func TestOIDCCallbackRejectsNonceMismatch(t *testing.T) {
 	}
 	if any, err := a.deps.Users.Any(context.Background()); err != nil || any {
 		t.Fatalf("a nonce mismatch created an account (any=%v, err=%v)", any, err)
+	}
+}
+
+// The authorization request carries an S256 challenge and the redemption the
+// matching verifier, so a code captured out of the redirect cannot be spent
+// without the server-side flow record it was minted against.
+func TestOIDCLoginUsesPKCE(t *testing.T) {
+	a := newOIDCApp(t)
+	authURL, cookie := a.startAuthorize(t, "", nil)
+	q := authURL.Query()
+	if got := q.Get("code_challenge_method"); got != "S256" {
+		t.Fatalf("code_challenge_method = %q, want S256", got)
+	}
+	challenge := q.Get("code_challenge")
+	if challenge == "" {
+		t.Fatal("authorize url carries no code_challenge")
+	}
+
+	a.issuer.issue("code-1", q.Get("nonce"), claimSet("sub-alice", nil))
+	status, _, _ := a.callback(t, "code=code-1&state="+url.QueryEscape(q.Get("state")), cookie)
+	if status != fiber.StatusFound {
+		t.Fatalf("callback status = %d, want 302", status)
+	}
+
+	verifier := a.issuer.verifiers["code-1"]
+	sum := sha256.Sum256([]byte(verifier))
+	if want := base64.RawURLEncoding.EncodeToString(sum[:]); want != challenge {
+		t.Errorf("code_verifier %q hashes to %q, want the challenge %q", verifier, want, challenge)
+	}
+}
+
+// A flow record from before PKCE has no verifier to redeem with, so the login
+// in flight across the upgrade is dropped rather than exchanged.
+func TestOIDCCallbackRejectsFlowWithoutVerifier(t *testing.T) {
+	a := newOIDCApp(t)
+	state, nonce, cookie := a.start(t, "", nil)
+	a.issuer.issue("code-1", nonce, claimSet("sub-alice", nil))
+
+	ctx := context.Background()
+	d, err := a.deps.Sessions.Get(ctx, cookie.Value)
+	if err != nil {
+		t.Fatalf("read the pending session: %v", err)
+	}
+	d.OIDC.Verifier = ""
+	if err := a.deps.Sessions.Update(ctx, cookie.Value, d); err != nil {
+		t.Fatalf("rewrite the flow: %v", err)
+	}
+
+	status, _, session := a.callback(t, "code=code-1&state="+url.QueryEscape(state), cookie)
+	if status != fiber.StatusBadRequest {
+		t.Fatalf("callback status = %d, want 400", status)
+	}
+	if session != nil {
+		t.Error("a flow with no verifier set a session cookie")
+	}
+	if _, ok := a.issuer.verifiers["code-1"]; ok {
+		t.Error("the code was redeemed without a verifier")
+	}
+	if any, err := a.deps.Users.Any(ctx); err != nil || any {
+		t.Fatalf("a flow with no verifier created an account (any=%v, err=%v)", any, err)
 	}
 }
 

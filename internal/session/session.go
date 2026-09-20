@@ -48,6 +48,10 @@ type OIDCFlow struct {
 	Provider string `json:"provider"`
 	State    string `json:"state"`
 	Nonce    string `json:"nonce"`
+	// Verifier is the PKCE code verifier. Only its SHA-256 challenge goes out
+	// through the browser, so the callback's authorization code can be redeemed
+	// by nothing but the flow record that started the request.
+	Verifier string `json:"verifier"`
 	// Redirect is the same-origin path to land on afterwards, already
 	// validated by the handler that stored it.
 	Redirect string `json:"redirect,omitempty"`
