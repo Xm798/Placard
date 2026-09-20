@@ -99,7 +99,7 @@ Root of everything the instance writes.
 | `server.min_cli_version`  | `PLACARD_SERVER_MIN_CLI_VERSION` | `""` (no check)         |
 | `server.read_buffer_size` | `PLACARD_SERVER_READ_BUFFER_SIZE`| `16384`                 |
 
-- **`base_url`** is the canonical public origin, no trailing slash. Share links
+- **`base_url`** is the canonical public origin (absolute `http(s)` URL with a host, no path). Share links
   are built from it, the CSRF and CORS allowlists default to it, and the session
   cookie's name and `Secure` flag follow its scheme: over `https` the cookie is
   `__Host-placard_session`, over plain `http` (localhost development) it is

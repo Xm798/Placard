@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -551,6 +552,9 @@ func (c *Config) Validate() error {
 	if c.Server.Port < 1 || c.Server.Port > 65535 {
 		errs = append(errs, "server.port must be in 1..65535")
 	}
+	if err := validateBaseURL(c.Server.BaseURL); err != nil {
+		errs = append(errs, "server.base_url "+err.Error())
+	}
 	switch c.Database.Driver {
 	case "", DriverSQLite:
 	case DriverPostgres:
@@ -608,6 +612,22 @@ func (c *Config) Validate() error {
 
 	if len(errs) > 0 {
 		return fmt.Errorf("config validation: %s", strings.Join(errs, "; "))
+	}
+	return nil
+}
+
+// validateBaseURL requires the bare origin base_url is documented to be: it
+// seeds the CORS and CSRF allowlists verbatim, which only ever hold origins,
+// and Fiber's CORS middleware panics at boot on anything else. A single
+// trailing slash is tolerated because every consumer trims it.
+func validateBaseURL(raw string) error {
+	const want = "must be an absolute http(s) origin such as https://placard.example.com"
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" || u.Hostname() == "" {
+		return errors.New(want)
+	}
+	if (u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
+		return errors.New(want + " (no path, query, fragment or credentials)")
 	}
 	return nil
 }

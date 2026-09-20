@@ -330,6 +330,39 @@ func TestValidate_MinCLIVersion(t *testing.T) {
 	}
 }
 
+func TestValidate_BaseURL(t *testing.T) {
+	cases := []struct {
+		name string
+		url  string
+		ok   bool
+	}{
+		{"empty", "", false},
+		{"whitespace", "   ", false},
+		{"no scheme", "example.com", false},
+		{"bad scheme", "ftp://example.com", false},
+		{"no host", "https://", false},
+		{"path", "https://example.com/placard", false},
+		{"query", "https://example.com?x=1", false},
+		{"credentials", "https://user:pw@example.com", false},
+		{"http localhost", "http://localhost:8080", true},
+		{"https domain", "https://placard.example.com", true},
+		{"trailing slash", "https://placard.example.com/", true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			c := validConfig()
+			c.Server.BaseURL = tc.url
+			err := c.Validate()
+			if tc.ok && err != nil {
+				t.Fatalf("unexpected error %v", err)
+			}
+			if !tc.ok && (err == nil || !strings.Contains(err.Error(), "server.base_url")) {
+				t.Fatalf("expected server.base_url error, got %v", err)
+			}
+		})
+	}
+}
+
 func TestValidate_PortRange(t *testing.T) {
 	for _, port := range []int{0, -1, 65536, 70000} {
 		c := validConfig()
