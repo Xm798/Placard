@@ -124,6 +124,8 @@ the working directory. [`config.example.yaml`](config.example.yaml) is a
 commented starting point, and **[docs/configuration.md](docs/configuration.md)
 documents every key, its default and its environment variable**.
 
+What to back up and how to restore it: [docs/backup.md](docs/backup.md).
+
 ### Single sign-on
 
 Any provider with an OpenID Connect discovery document works; there are no

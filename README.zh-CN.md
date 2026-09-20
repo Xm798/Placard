@@ -113,6 +113,8 @@ placard whoami / login / logout / update
 [`config.example.yaml`](config.example.yaml) 是带注释的起点，
 **[docs/configuration.md](docs/configuration.md) 列出了每个键、默认值与对应的环境变量**。
 
+备份什么、如何恢复：[docs/backup.md](docs/backup.md)。
+
 ### 单点登录
 
 任何提供 OpenID Connect discovery 文档的 provider 都能用，没有针对具体厂商的预设。

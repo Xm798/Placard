@@ -111,7 +111,8 @@ Root of everything the instance writes.
 - **`secret_key`** is the 32-byte hex instance secret every keyed primitive
   derives from. Left empty it is generated into `<data_dir>/secret.key` (mode
   `0600`) on the first start. Changing or losing it invalidates every personal
-  access token.
+  access token and every stored share code. Back it up with the database; see
+  [backup.md](backup.md).
 - **`min_cli_version`** is the oldest `placard` CLI this instance answers, e.g.
   `1.2.0`. An older CLI gets HTTP 426 and an upgrade message instead of failing
   deeper in the request.
