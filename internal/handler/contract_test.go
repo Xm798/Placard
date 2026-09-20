@@ -529,6 +529,14 @@ func TestViewShellNoSrcdoc(t *testing.T) {
 	if !strings.Contains(csp, "frame-src 'self'") {
 		t.Errorf("view shell missing frame-src 'self', got %q", csp)
 	}
+	// The shell's favicon is an inline SVG data: URI; without img-src naming
+	// that scheme the page blocks its own icon under default-src 'self'.
+	if !strings.Contains(body, `href="data:image/svg+xml,`) {
+		t.Errorf("view shell missing its inline favicon")
+	}
+	if !strings.Contains(csp, "img-src 'self' data:") {
+		t.Errorf("view shell CSP must allow its data: favicon, got %q", csp)
+	}
 	if resp.Header.Get("Strict-Transport-Security") == "" {
 		t.Errorf("view shell missing Strict-Transport-Security")
 	}

@@ -343,6 +343,10 @@ func TestLockedPageServesItsOwnCSPHashes(t *testing.T) {
 	if strings.Contains(csp, shell.scriptHash) {
 		t.Fatalf("locked shell CSP names the viewer shell's script hash: %q", csp)
 	}
+	// The unlock page carries the same inline SVG favicon as the viewer shell.
+	if !strings.Contains(csp, "img-src 'self' data:") {
+		t.Fatalf("unlock CSP must allow its data: favicon, got %q", csp)
+	}
 }
 
 // --- the code never leaks ------------------------------------------------

@@ -158,11 +158,13 @@ func (h *Handlers) ViewShell(c *fiber.Ctx) error {
 // setShellCSP sets the Content-Security-Policy shared by the two share-page
 // shells, admitting each one's own inline style and script by hash. frame-src
 // is 'self' for both: only the viewer shell has an iframe, and naming the
-// directive on a page without one costs nothing.
+// directive on a page without one costs nothing. data: in img-src is what the
+// inline SVG favicon both shells carry is loaded from; they use no other image.
 func setShellCSP(c *fiber.Ctx, styleHash, scriptHash string) {
 	c.Set("Content-Security-Policy", "default-src 'self'; "+
 		"script-src "+scriptHash+"; "+
 		"style-src "+styleHash+"; "+
+		"img-src 'self' data:; "+
 		"frame-ancestors 'self'; base-uri 'none'; "+
 		"frame-src 'self'")
 }
