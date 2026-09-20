@@ -9,6 +9,20 @@ logs/
 data/
 dist/
 prototype*.html
+.DS_Store
+.scratch
+
+# Local secrets and host build artifacts: `COPY . .` would otherwise bake
+# OIDC/S3/DB credentials and a stray host binary into the build-stage layer.
+# Patterns are root-anchored, so cmd/placard and skills/placard stay in.
+config.yaml
+.env
+.env.local
+configs/*.json
+placard
+placard-server
+main
+*.exe
 
 # Frontend: never ship host (macOS) node_modules into the linux webbuild stage —
 # native binaries (esbuild/rollup) are platform-specific; the stage runs npm ci
