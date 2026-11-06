@@ -1,14 +1,16 @@
-import { useEffect, useState, type CSSProperties } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { api } from '../lib/api'
 import { LANGUAGES, setLanguage, normalizeLang, type Lang } from '../i18n'
 import { useTheme } from '../hooks/useTheme'
 import { useToast } from '../hooks/useToast'
 import Avatar from './Avatar'
+import Brand from './Brand'
 
-// Ported 1:1 from internal/web/app.html:168-210 + app.js:62-140.
-// Nav active styling replicates paintNav (app.js:78-83).
+// The app's navigation: a fixed sidebar from md up, and below that the same
+// sidebar as a drawer behind the top bar's menu button. Every control renders
+// once, so there is a single language picker, theme toggle and sign-out.
 
 interface Me {
   display_name?: string
@@ -28,12 +30,17 @@ const NAV = [
 // of the people it would not work for.
 const ADMIN_NAV = { to: '/admin', key: 'nav.admin' }
 
-// paintNav (app.js:78-83): active → bg var(--hover), fg var(--fg); else transparent/fg-soft.
-function navStyle(isActive: boolean): CSSProperties {
-  return {
-    background: isActive ? 'var(--hover)' : 'transparent',
-    color: isActive ? 'var(--fg)' : 'var(--fg-soft)',
-  }
+function ThemeIcon({ dark }: { dark: boolean }) {
+  return dark ? (
+    <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+      <circle cx="12" cy="12" r="5" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  ) : (
+    <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
 }
 
 export default function Header() {
@@ -43,6 +50,7 @@ export default function Header() {
   const [me, setMe] = useState<Me>({})
   const [mobileOpen, setMobileOpen] = useState(false)
   const nav = me.is_admin ? [...NAV, ADMIN_NAV] : NAV
+  const close = () => setMobileOpen(false)
 
   // /api/me → user name + avatar. 401 is handled by api().
   useEffect(() => {
@@ -62,142 +70,82 @@ export default function Header() {
   }
 
   return (
-    <header
-      className="border-b border-line sticky top-0 z-50"
-      style={{
-        background: 'color-mix(in srgb, var(--bg) 85%, transparent)',
-        backdropFilter: 'blur(12px)',
-      }}
-    >
-      <div className="max-w-5xl mx-auto h-16 px-5 sm:px-8 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" aria-label={t('header.home')} className="flex items-center gap-2.5">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center mono text-sm font-medium"
-              aria-hidden="true"
-              style={{ background: 'var(--ink)', color: 'var(--ink-fg)' }}
-            >
-              &lt;/&gt;
-            </div>
-            <span className="font-display font-extrabold text-xl tracking-tight">Placard</span>
-          </Link>
-          <nav className="hidden sm:flex items-center gap-1">
-            {nav.map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                end={n.to === '/'}
-                className="px-3.5 py-1.5 text-sm font-medium rounded-lg"
-                style={({ isActive }) => navStyle(isActive)}
-              >
-                {t(n.key)}
-              </NavLink>
-            ))}
-          </nav>
+    <>
+      <header className="md:hidden surface border-b-[3px] border-line sticky top-0 z-40 h-16 px-4 flex items-center justify-between">
+        <Brand onClick={close} />
+        <button
+          aria-label={mobileOpen ? t('header.closeMenu') : t('header.openMenu')}
+          aria-expanded={mobileOpen}
+          aria-controls="sidebar"
+          onClick={() => setMobileOpen((o) => !o)}
+          className="btn-outline w-10 h-10 flex items-center justify-center"
+        >
+          <svg aria-hidden="true" className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path d={mobileOpen ? 'M6 6l12 12M18 6L6 18' : 'M4 6h16M4 12h16M4 18h16'} />
+          </svg>
+        </button>
+      </header>
+
+      <aside
+        id="sidebar"
+        className={
+          'sidebar surface fixed z-30 left-0 bottom-0 top-16 md:top-0 w-full sm:w-72 md:w-64 flex-col ' +
+          (mobileOpen ? 'flex' : 'hidden md:flex')
+        }
+      >
+        <div className="hidden md:block px-6 pt-7 pb-8">
+          <Brand />
         </div>
-        <div className="flex items-center gap-3">
-          {/* F14: hamburger trigger (<640px only; the desktop nav above covers sm and up) */}
-          <button
-            aria-label={mobileOpen ? t('header.closeMenu') : t('header.openMenu')}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-nav"
-            onClick={() => setMobileOpen((o) => !o)}
-            className="sm:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[var(--hover)] transition-colors text-soft"
-          >
-            <svg
-              aria-hidden="true"
-              className={'h-[18px] w-[18px]' + (mobileOpen ? ' hidden' : '')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
+
+        <nav className="flex-1 overflow-y-auto px-4 pt-5 md:pt-0 space-y-2" aria-label={t('header.mobileNav')}>
+          {nav.map((n, i) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.to === '/'}
+              onClick={close}
+              className={({ isActive }) => 'side-link flex items-baseline gap-3 px-4 py-3' + (isActive ? ' active' : '')}
             >
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <svg
-              aria-hidden="true"
-              className={'h-[18px] w-[18px]' + (mobileOpen ? '' : ' hidden')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
+              <span className="mono text-xs font-bold opacity-70" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <span className="font-display text-lg uppercase">{t(n.key)}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="sidebar-foot p-4 space-y-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <Avatar authzId={me.authz_id} name={me.display_name} className="w-10 h-10 text-base" />
+            <span className="font-bold text-sm truncate">{me.display_name || ''}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <select
+              aria-label={t('header.language')}
+              value={normalizeLang(i18n.language)}
+              onChange={(e) => setLanguage(e.target.value as Lang)}
+              className="seg flex-1 min-w-0 h-10 px-2 text-sm font-bold surface border-2 border-line-strong"
             >
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-          <span className="hidden sm:inline text-sm text-soft">{me.display_name || ''}</span>
-          <button
-            onClick={logout}
-            className="px-3 py-1.5 text-sm font-medium rounded-lg hover:bg-[var(--hover)] transition-colors text-soft"
-          >
+              {LANGUAGES.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </select>
+            <button
+              aria-label={t('header.toggleTheme')}
+              aria-pressed={dark}
+              onClick={toggle}
+              className="btn-outline w-10 h-10 shrink-0 flex items-center justify-center"
+            >
+              <ThemeIcon dark={dark} />
+            </button>
+          </div>
+          <button onClick={logout} className="btn-outline w-full h-10 text-sm uppercase tracking-wide">
             {t('header.logout')}
           </button>
-          <select
-            aria-label={t('header.language')}
-            value={normalizeLang(i18n.language)}
-            onChange={(e) => setLanguage(e.target.value as Lang)}
-            className="h-9 rounded-lg px-2 text-sm bg-transparent border border-line-strong text-soft"
-          >
-            {LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
-          <button
-            aria-label={t('header.toggleTheme')}
-            aria-pressed={dark}
-            onClick={toggle}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[var(--hover)] transition-colors text-soft"
-          >
-            <svg
-              aria-hidden="true"
-              className={'h-[18px] w-[18px]' + (dark ? '' : ' hidden')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-            </svg>
-            <svg
-              aria-hidden="true"
-              className={'h-[18px] w-[18px]' + (dark ? ' hidden' : '')}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          </button>
-          <div className="w-px h-5" style={{ background: 'var(--line)' }}></div>
-          <div className="flex items-center gap-2">
-            <Avatar authzId={me.authz_id} name={me.display_name} />
-          </div>
         </div>
-      </div>
-      {/* F14: the hamburger's panel — hidden on desktop; it is how a <640px
-          viewport reaches publish / my files / settings at all. */}
-      <nav
-        id="mobile-nav"
-        className={(mobileOpen ? '' : 'hidden ') + 'sm:hidden border-t border-line px-5 py-2'}
-        aria-label={t('header.mobileNav')}
-      >
-        {nav.map((n) => (
-          <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.to === '/'}
-            onClick={() => setMobileOpen(false)}
-            className="block w-full text-left px-3.5 py-2.5 text-sm font-medium rounded-lg"
-            style={({ isActive }) => navStyle(isActive)}
-          >
-            {t(n.key)}
-          </NavLink>
-        ))}
-      </nav>
-    </header>
+      </aside>
+    </>
   )
 }

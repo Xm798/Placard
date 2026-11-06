@@ -67,15 +67,15 @@ const en = {
 
   dropzone: {
     title: 'Drop an HTML file here',
-    hint: 'or <pick>click to choose a file</pick> · .html / .htm · 10MB max',
+    hint: '.html / .htm · 10MB max',
     choose: 'Choose file',
   },
 
   publish: {
     titleNew: 'Publish HTML',
     titleUpdate: 'Update page',
-    leadNew: 'Upload an <code>.html</code> file and get a link to share.',
     leadUpdate: 'Upload new HTML as the next version of <code>/s/{{id}}</code> — the share link stays the same.',
+    optionsTitle: 'Options',
     titleField: 'Title',
     titlePlaceholder: 'Optional, defaults to the file name',
     expiryLabel: 'Keep for',
@@ -137,6 +137,8 @@ const en = {
 
   fileRow: {
     untitled: '(untitled)',
+    createdLabel: 'Published',
+    expiresLabel: 'Expires',
     open: 'Open: {{name}}',
     visibilityTitle: 'Visibility: {{label}}',
     viewsTitle: 'Views (only you can see this)',
@@ -185,7 +187,6 @@ const en = {
 
   settings: {
     title: 'Settings',
-    sub: 'Manage the API tokens used by the CLI and the Skill.',
     tokenCardTitle: 'API Token',
     tokenCardDesc:
       'Used by command-line and Skill calls such as <code>page publish</code>, carried in the <code>Authorization: Bearer</code> header. The plaintext is shown once.',

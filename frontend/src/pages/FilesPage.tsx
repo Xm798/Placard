@@ -1,4 +1,3 @@
-// "My files" page. Ported 1:1 from internal/web/app.html:301-334 + app.js:229-328.
 
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -184,7 +183,7 @@ export default function FilesPage() {
       <div className="pt-12 pb-8">
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="font-display font-extrabold text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
+            <h1 className="font-display text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
               {t('files.title')}
             </h1>
             <p className="text-soft">{t('files.count', { count: state.total })}</p>
@@ -193,9 +192,9 @@ export default function FilesPage() {
       </div>
 
       {isEmpty ? (
-        <div className="rounded-2xl border border-line surface px-8 py-20 text-center">
+        <div className="card px-8 py-20 text-center">
           <div
-            className="mx-auto w-12 h-12 rounded-xl border border-line-strong flex items-center justify-center mb-5"
+            className="mx-auto w-12 h-12 border-2 border-line-strong flex items-center justify-center mb-5"
             aria-hidden="true"
           >
             <svg
@@ -209,21 +208,19 @@ export default function FilesPage() {
               <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 7l-4-4m0 0L8 7m4-4v12" />
             </svg>
           </div>
-          <p className="font-display font-semibold text-lg mb-1.5">{t('files.empty.title')}</p>
+          <p className="font-display text-lg mb-1.5">{t('files.empty.title')}</p>
           <p className="text-soft text-sm mb-6">{t('files.empty.sub')}</p>
-          <button className="btn-ink rounded-lg text-sm font-medium px-5 py-2.5" onClick={() => navigate('/')}>
+          <button className="btn-ink text-sm px-5 py-2.5" onClick={() => navigate('/')}>
             {t('files.empty.cta')}
           </button>
         </div>
       ) : (
         <>
-          <div className="rounded-2xl border border-line overflow-hidden surface">
-            <div>
-              {state.items.map((f, i) => (
+          <div className="grid gap-7 md:grid-cols-2">
+              {state.items.map((f) => (
                 <FileRow
                   key={f.id}
                   file={f}
-                  isLast={i === state.items.length - 1}
                   expanded={expandedId === f.id}
                   versions={expandedId === f.id ? versions : null}
                   busy={busyId === f.id}
@@ -236,14 +233,13 @@ export default function FilesPage() {
                   onShare={shareFileOpen}
                 />
               ))}
-            </div>
           </div>
 
           <div className="flex items-center justify-between mt-5 text-sm text-soft">
             <span>{t('files.pager', { start, end, total: state.total })}</span>
             <div className="flex gap-2">
               <button
-                className="btn-outline rounded-lg px-3 py-1.5"
+                className="btn-outline px-3 py-1.5"
                 aria-label={t('common.prevPage')}
                 disabled={state.page <= 1}
                 onClick={() => {
@@ -253,7 +249,7 @@ export default function FilesPage() {
                 {t('common.prevPage')}
               </button>
               <button
-                className="btn-outline rounded-lg px-3 py-1.5"
+                className="btn-outline px-3 py-1.5"
                 aria-label={t('common.nextPage')}
                 disabled={state.page >= totalPages}
                 onClick={() => loadFiles(state.page + 1)}

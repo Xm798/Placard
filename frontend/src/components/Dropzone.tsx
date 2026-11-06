@@ -1,16 +1,19 @@
-import { useRef } from 'react'
-import { Trans, useTranslation } from 'react-i18next'
+import { useRef, type ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
-// Dropzone. Ported 1:1 from internal/web/app.html:228-238 + drag/drop wiring
-// app.js:165-171. Click opens the hidden file input; drag adds .dragover; drop
+// Dropzone. Click opens the hidden file input; drag adds .dragover; drop
 // hands the first file to onFile. The inner "choose file" button stops
 // propagation (app.js:486) so it doesn't double-fire the dropzone click.
 
 interface DropzoneProps {
   onFile: (f: File) => void
+  // The page's own headline, set inside the drop target so the poster is the
+  // whole call to action.
+  heading: ReactNode
+  note?: ReactNode
 }
 
-export default function Dropzone({ onFile }: DropzoneProps) {
+export default function Dropzone({ onFile, heading, note }: DropzoneProps) {
   const { t } = useTranslation()
   const dz = useRef<HTMLDivElement>(null)
   const fi = useRef<HTMLInputElement>(null)
@@ -18,7 +21,7 @@ export default function Dropzone({ onFile }: DropzoneProps) {
   return (
     <div
       ref={dz}
-      className="dropzone rounded-2xl px-8 py-14 sm:py-16 text-center cursor-pointer"
+      className="dropzone relative min-h-[460px] p-7 sm:p-10 flex flex-col justify-between gap-10 cursor-pointer"
       id="dropzone"
       onClick={() => fi.current?.click()}
       onDragOver={(e) => {
@@ -35,35 +38,29 @@ export default function Dropzone({ onFile }: DropzoneProps) {
         if (e.dataTransfer.files.length) onFile(e.dataTransfer.files[0])
       }}
     >
-      <div className="mx-auto w-14 h-14 rounded-xl surface border border-line-strong flex items-center justify-center mb-5">
-        <svg
-          className="w-6 h-6"
-          style={{ color: 'var(--fg-soft)' }}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth="1.5"
-        >
+      <div className="dropzone-icon absolute top-6 right-6 sm:top-8 sm:right-8 w-16 h-16 rotate-6 flex items-center justify-center" aria-hidden="true">
+        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
           <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 7l-4-4m0 0L8 7m4-4v12" />
         </svg>
       </div>
-      <p className="font-display font-semibold text-xl mb-1.5">{t('dropzone.title')}</p>
-      <p className="text-soft text-sm mb-6">
-        <Trans
-          i18nKey="dropzone.hint"
-          components={{ pick: <span className="font-medium ul" style={{ color: 'var(--fg)' }} /> }}
-        />
-      </p>
-      <button
-        className="btn-ink font-medium text-sm rounded-lg px-6 py-2.5"
-        data-action="pick-file"
-        onClick={(e) => {
-          e.stopPropagation()
-          fi.current?.click()
-        }}
-      >
-        {t('dropzone.choose')}
-      </button>
+      <div className="pr-20">
+        <h1 className="font-display uppercase leading-[0.92] text-5xl sm:text-7xl max-w-[12ch]">{heading}</h1>
+        <p className="font-display text-xl sm:text-2xl mt-4">{t('dropzone.title')}</p>
+        {note ? <div className="mt-6 max-w-xl text-sm leading-relaxed">{note}</div> : null}
+      </div>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <button
+          className="btn-ink text-base uppercase tracking-wide px-7 py-3 self-start"
+          data-action="pick-file"
+          onClick={(e) => {
+            e.stopPropagation()
+            fi.current?.click()
+          }}
+        >
+          {t('dropzone.choose')}
+        </button>
+        <p className="text-sm font-bold">{t('dropzone.hint')}</p>
+      </div>
       <input
         ref={fi}
         type="file"

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { LogoMark, Wordmark } from '../components/Brand'
 
 // The frame the sign-in and registration pages share. They render outside the
 // app layout: <Header/> loads /api/me, which has no answer for a visitor who is
@@ -15,23 +16,38 @@ export default function AuthShell({
   footer: ReactNode
 }) {
   return (
-    <main className="min-h-screen flex items-center justify-center px-5 py-12">
-      <section className="w-full max-w-sm">
-        <div className="flex items-center gap-2.5 mb-10">
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center mono text-sm font-medium"
-            aria-hidden="true"
-            style={{ background: 'var(--ink)', color: 'var(--ink-fg)' }}
-          >
-            &lt;/&gt;
-          </div>
-          <span className="font-display font-extrabold text-xl tracking-tight">Placard</span>
+    <main className="min-h-screen grid lg:grid-cols-2">
+      <div className="auth-poster hidden lg:flex flex-col justify-between p-12" aria-hidden="true">
+        <LogoMark className="logo-mark-plain w-14 h-14 text-lg" />
+        <div className="font-display uppercase leading-[0.85] text-[7.5rem]">
+          Pla
+          <br />
+          card<span className="text-accent">.</span>
         </div>
-        <h1 className="font-display font-extrabold text-3xl tracking-[-0.03em] mb-2">{title}</h1>
-        <p className="text-soft text-sm leading-relaxed mb-8">{subtitle}</p>
-        {children}
-        <div className="mt-6 text-sm text-soft">{footer}</div>
-      </section>
+        <div className="flex gap-3">
+          <span className="sticker px-3 py-1 text-sm">HTML</span>
+          <span className="sticker sticker-pop px-3 py-1 text-sm">
+            →
+          </span>
+          <span className="sticker sticker-plain px-3 py-1 text-sm">
+            URL
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center justify-center px-5 py-12">
+        <section className="w-full max-w-sm">
+          <div className="flex items-center gap-3 mb-8 lg:hidden">
+            <LogoMark />
+            <Wordmark />
+          </div>
+          <div className="card p-7">
+            <h1 className="font-display text-3xl mb-2">{title}</h1>
+            <p className="text-soft text-sm leading-relaxed mb-7">{subtitle}</p>
+            {children}
+          </div>
+          <div className="mt-6 text-sm font-bold">{footer}</div>
+        </section>
+      </div>
     </main>
   )
 }
@@ -50,7 +66,7 @@ export function Field({
       </label>
       <input
         id={id}
-        className="w-full h-10 px-3 rounded-lg border border-line-strong bg-transparent outline-none focus:border-[var(--fg)] transition-colors"
+        className="w-full h-10 px-3 border-2 border-line-strong surface outline-none"
         {...props}
       />
       {hint ? <p className="text-faint text-xs mt-1.5">{hint}</p> : null}

@@ -301,35 +301,38 @@ var deviceConfirmTmpl = template.Must(template.New("device").Parse(`<!DOCTYPE ht
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{.T.Title}}</title>
 <style>
-:root{--bg:#fafaf8;--surface:#fff;--fg:#16150f;--fg-soft:#6b6960;--line:#e7e5dd;--ink:#16150f;--ink-fg:#fafaf8;--warn:#8a5a00;}
+:root{--bg:#ffde59;--surface:#fff;--fg:#0a0a0a;--fg-soft:#2e2e2e;--edge:#0a0a0a;--ink:#0a0a0a;--ink-fg:#ffde59;--accent:#ff6fb5;--pop:#5cc8ff;--bad:#ff4d4d;}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:32px;width:min(480px,92vw);}
-h1{font-size:20px;margin:0 0 8px;letter-spacing:-.02em;}
+.card{background:var(--surface);border:3px solid var(--edge);box-shadow:8px 8px 0 var(--edge);padding:32px;width:min(480px,92vw);}
+h1{font-size:22px;font-weight:900;text-transform:uppercase;margin:0 0 12px;letter-spacing:-.03em;}
 p{margin:0 0 16px;color:var(--fg-soft);font-size:14px;line-height:1.6;}
-.warn{color:var(--warn);font-weight:600;}
-label,fieldset.ttl legend{display:block;padding:0;font-size:13px;font-weight:600;margin-bottom:6px;}
-input[type=text]{width:100%;padding:12px 14px;font-family:ui-monospace,Menlo,monospace;font-size:20px;letter-spacing:.28em;text-transform:uppercase;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);}
-button{margin-top:18px;width:100%;padding:12px;border:0;border-radius:10px;background:var(--ink);color:var(--ink-fg);font-size:15px;font-weight:600;cursor:pointer;}
-.meta{margin-top:18px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--fg-soft);}
-.meta dt{font-weight:600;display:inline;}
+.warn{color:var(--fg);font-weight:700;background:var(--bg);border:2px solid var(--edge);padding:10px 12px;}
+label,fieldset.ttl legend{display:block;padding:0;font-size:13px;font-weight:800;margin-bottom:6px;}
+input[type=text]{width:100%;padding:12px 14px;font-family:ui-monospace,Menlo,monospace;font-size:20px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;border:2.5px solid var(--edge);background:var(--surface);color:var(--fg);}
+input[type=text]:focus{outline:none;box-shadow:4px 4px 0 var(--pop);}
+button{margin-top:20px;width:100%;padding:12px;border:2.5px solid var(--edge);background:var(--accent);color:var(--fg);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;cursor:pointer;box-shadow:4px 4px 0 var(--edge);transition:transform .08s,box-shadow .08s;}
+button:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--edge);}
+button:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--edge);}
+.meta{margin-top:20px;padding:12px 14px;border:2px dashed var(--edge);font-size:12px;color:var(--fg-soft);}
+.meta dt{font-weight:800;display:inline;}
 .meta dd{display:inline;margin:0 0 0 4px;}
 .meta div{margin-bottom:4px;word-break:break-all;}
-.err{margin:0 0 16px;padding:10px 12px;border-radius:8px;background:#fdecea;color:#8a1c12;font-size:13px;}
+.err{margin:0 0 16px;padding:10px 12px;border:2px solid var(--edge);background:var(--bad);color:var(--fg);font-size:13px;font-weight:700;}
 code{font-family:ui-monospace,Menlo,monospace;font-size:.92em;}
 /* Segmented radiogroup, CSS-only: this page is script-src 'none', so the
    checked state is painted with :checked + label and nothing else. */
 fieldset.ttl{margin:18px 0 0;padding:0;border:0;}
-.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.seg{display:flex;border:2.5px solid var(--edge);overflow:hidden;box-shadow:3px 3px 0 var(--edge);}
 .seg input{position:absolute;opacity:0;width:0;height:0;}
 /* margin-bottom:0 resets the shared label rule above: under align-items:stretch
    an inherited 6px would shrink each segment and leave a strip of card white
-   inside the rounded border, visible against the checked segment's dark fill. */
-.seg label{flex:1;margin-bottom:0;padding:9px 4px;text-align:center;color:var(--fg-soft);background:var(--bg);cursor:pointer;border-left:1px solid var(--line);}
+   inside the border, visible against the checked segment's dark fill. */
+.seg label{flex:1;margin-bottom:0;padding:9px 4px;text-align:center;font-weight:700;color:var(--fg);background:var(--surface);cursor:pointer;border-left:2px solid var(--edge);}
 .seg label:first-of-type{border-left:0;}
 .seg input:checked+label{background:var(--ink);color:var(--ink-fg);}
 /* Keyboard users must still see focus: the input itself is visually hidden. */
-.seg input:focus-visible+label{outline:2px solid var(--ink);outline-offset:-2px;}
+.seg input:focus-visible+label{outline:3px solid var(--pop);outline-offset:-3px;}
 </style>
 </head>
 <body>
@@ -376,10 +379,10 @@ var deviceApprovedTmpl = template.Must(template.New("approved").Parse(`<!DOCTYPE
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{.Title}}</title>
 <style>
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fafaf8;color:#16150f;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;}
-.card{background:#fff;border:1px solid #e7e5dd;border-radius:14px;padding:32px;width:min(420px,92vw);text-align:center;}
-h1{font-size:20px;margin:0 0 8px;}
-p{margin:0;color:#6b6960;font-size:14px;line-height:1.6;}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#ffde59;color:#0a0a0a;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;}
+.card{background:#fff;border:3px solid #0a0a0a;box-shadow:8px 8px 0 #0a0a0a;padding:32px;width:min(420px,92vw);text-align:center;}
+h1{font-size:22px;font-weight:900;text-transform:uppercase;letter-spacing:-.03em;margin:0 0 8px;}
+p{margin:0;color:#2e2e2e;font-size:14px;line-height:1.6;}
 </style>
 </head>
 <body>

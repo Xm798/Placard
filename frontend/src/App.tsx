@@ -8,10 +8,12 @@ export default function App() {
   return (
     <ToastProvider>
       <Header />
-      <main className="max-w-5xl mx-auto px-5 sm:px-8">
-        {/* Keyed wrapper re-triggers the rise animation on every navigation (app.js .page.active). */}
-        <div key={location.pathname} className="page-enter">
-          <Outlet />
+      <main className="md:pl-64">
+        <div className="max-w-6xl mx-auto px-5 sm:px-10 pb-24">
+          {/* Keyed wrapper re-triggers the rise animation on every navigation (app.js .page.active). */}
+          <div key={location.pathname} className="page-enter">
+            <Outlet />
+          </div>
         </div>
       </main>
       <ToastViewport />

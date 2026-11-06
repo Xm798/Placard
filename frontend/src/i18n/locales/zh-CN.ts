@@ -64,15 +64,15 @@ const zhCN: typeof en = {
 
   dropzone: {
     title: '拖拽 HTML 文件到此处',
-    hint: '或 <pick>点击选择文件</pick> · 支持 .html / .htm · 最大 10MB',
+    hint: '支持 .html / .htm · 最大 10MB',
     choose: '选择文件',
   },
 
   publish: {
     titleNew: '发布 HTML',
     titleUpdate: '更新页面',
-    leadNew: '上传一个 <code>.html</code> 文件，生成一条分享链接。',
     leadUpdate: '上传新的 HTML，作为 <code>/s/{{id}}</code> 的新版本发布——分享链接保持不变。',
+    optionsTitle: '发布选项',
     titleField: '标题',
     titlePlaceholder: '可选，留空则使用文件名',
     expiryLabel: '保留时长',
@@ -135,6 +135,8 @@ const zhCN: typeof en = {
 
   fileRow: {
     untitled: '(无标题)',
+    createdLabel: '发布于',
+    expiresLabel: '到期',
     open: '打开：{{name}}',
     visibilityTitle: '可见范围：{{label}}',
     viewsTitle: '浏览量（仅你可见）',
@@ -183,7 +185,6 @@ const zhCN: typeof en = {
 
   settings: {
     title: '设置',
-    sub: '管理用于 CLI / Skill 的 API Token。',
     tokenCardTitle: 'API Token',
     tokenCardDesc:
       '用于 <code>page publish</code> 等命令行 / Skill 调用，带在 <code>Authorization: Bearer</code> 头中。生成后明文仅展示一次。',

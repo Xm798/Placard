@@ -73,7 +73,7 @@ function CodeBlock({
   const { t } = useTranslation()
   return (
     <div
-      className="flex items-start gap-2 p-2 pl-4 rounded-xl border border-line-strong mb-3"
+      className="flex items-start gap-2 p-2 pl-4 border-2 border-line-strong mb-3"
       style={{ background: 'var(--bg)' }}
     >
       <pre
@@ -98,7 +98,7 @@ function CodeBlock({
       </pre>
       <button
         aria-label={copyLabel}
-        className="btn-ink shrink-0 rounded-lg text-sm font-medium px-4 py-2"
+        className="btn-ink shrink-0 text-sm px-4 py-2"
         onClick={onCopy}
       >
         {t('common.copy')}
@@ -120,14 +120,14 @@ export default function DocsPage() {
   return (
     <section className="pb-16">
       <div className="pt-12 pb-8">
-        <h1 className="font-display font-extrabold text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
+        <h1 className="font-display text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
           {t('docs.title')}
         </h1>
         <p className="text-soft max-w-2xl leading-relaxed">{t('docs.lead')}</p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6 mb-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.skill.title')}</h2>
+      <div className="card p-6 mb-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.skill.title')}</h2>
         <p className="text-sm leading-relaxed mb-3">{t('docs.skill.desc')}</p>
         <CodeBlock
           text={INSTALL_PROMPT}
@@ -166,8 +166,8 @@ export default function DocsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6 mb-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.publishMethods.title')}</h2>
+      <div className="card p-6 mb-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.publishMethods.title')}</h2>
         <p className="text-sm leading-relaxed mb-2">
           <Trans
             i18nKey="docs.publishMethods.web"
@@ -218,8 +218,8 @@ export default function DocsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6 mb-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.visibility.title')}</h2>
+      <div className="card p-6 mb-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.visibility.title')}</h2>
         <p className="text-sm leading-relaxed mb-2">
           <Trans
             i18nKey="docs.visibility.link"
@@ -236,23 +236,23 @@ export default function DocsPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6 mb-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.shareCode.title')}</h2>
+      <div className="card p-6 mb-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.shareCode.title')}</h2>
         <p className="text-sm leading-relaxed mb-2">{t('docs.shareCode.body')}</p>
         <p className="text-sm leading-relaxed">
           <Trans i18nKey="docs.shareCode.rotate" components={{ code: <span className="mono text-[0.85em]" /> }} />
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6 mb-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.lifecycle.title')}</h2>
+      <div className="card p-6 mb-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.lifecycle.title')}</h2>
         <p className="text-sm leading-relaxed">
           <Trans i18nKey="docs.lifecycle.body" components={{ b: <span className="font-semibold" /> }} />
         </p>
       </div>
 
-      <div className="rounded-2xl border border-line surface p-6">
-        <h2 className="font-display font-bold text-lg mb-3">{t('docs.limits.title')}</h2>
+      <div className="card p-6">
+        <h2 className="font-display text-lg mb-3">{t('docs.limits.title')}</h2>
         <div className="text-sm">
           <div className="flex justify-between py-2 border-b border-line">
             <span className="text-soft">{t('docs.limits.fileSize')}</span>

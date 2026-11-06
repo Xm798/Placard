@@ -24,8 +24,6 @@ function visibilityHintWithDefault(val: string, t: TFunction): string {
   return val === '' ? t('publish.visibilityDefaultHint') : visibilityHint(val, t)
 }
 
-// Publish page. Ported 1:1 from internal/web/app.html:214-299 + app.js:142-227.
-
 const MAX_BYTES = 10 * 1024 * 1024
 
 // app.js:196-204 — status → error copy. Exported for unit testing.
@@ -142,44 +140,46 @@ export default function PublishPage() {
   return (
     <section id="page-publish">
       {card === 'form' && (
-        <div id="publish-form">
-          {/* Hero */}
-          <div className="pt-20 pb-8 sm:pt-24 sm:pb-10">
-            <h1 className="font-display font-extrabold tracking-[-0.03em] leading-[1.0] text-4xl sm:text-5xl mb-4">
-              {updateId ? t('publish.titleUpdate') : t('publish.titleNew')}
-            </h1>
-            <p className="text-base text-soft max-w-2xl leading-relaxed">
-              <Trans
-                i18nKey={updateId ? 'publish.leadUpdate' : 'publish.leadNew'}
-                values={{ id: updateId }}
-                components={{
-                  code: <span className="mono text-[0.9em]" style={{ color: 'var(--fg)' }} />,
-                }}
-              />
-            </p>
+        <div id="publish-form" className="pt-12 sm:pt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px] items-start">
+          <div className="min-w-0">
+            <Dropzone
+              key={dropKey}
+              onFile={publish}
+              heading={updateId ? t('publish.titleUpdate') : t('publish.titleNew')}
+              note={
+                updateId ? (
+                  <span className="sticker inline-block px-3 py-1.5">
+                    <Trans
+                      i18nKey="publish.leadUpdate"
+                      values={{ id: updateId }}
+                      components={{ code: <span className="mono text-[0.9em]" /> }}
+                    />
+                  </span>
+                ) : null
+              }
+            />
           </div>
 
-          {/* Dropzone */}
-          <Dropzone key={dropKey} onFile={publish} />
-
-          {/* Options bar */}
-          <div className="mt-5 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <span className="text-faint">{t('publish.titleField')}</span>
+          <aside className="card p-6 space-y-7 text-sm lg:sticky lg:top-8">
+            <span className="eyebrow">{t('publish.optionsTitle')}</span>
+            <div>
+              <label htmlFor="publish-title" className="block font-bold mb-2">
+                {t('publish.titleField')}
+              </label>
               <input
                 type="text"
                 id="publish-title"
                 aria-label={t('publish.titleField')}
-                className="bg-transparent border-b border-line-strong focus:border-[var(--fg)] outline-none px-1 py-1 w-56 transition-colors"
+                className="w-full h-10 px-3 surface border-2 border-line-strong outline-none"
                 placeholder={t('publish.titlePlaceholder')}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-faint" id="expiry-label">
+            <div>
+              <div className="font-bold mb-2" id="expiry-label">
                 {t('publish.expiryLabel')}
-              </span>
+              </div>
               <ExpirySegmented
                 options={EXPIRY_VALUES.map((val) => ({ val, label: t('publish.expiry.' + val) }))}
                 value={expiry}
@@ -187,21 +187,19 @@ export default function PublishPage() {
                 ariaLabelledBy="expiry-label"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-faint" id="visibility-label">
+            <div>
+              <div className="font-bold mb-2" id="visibility-label">
                 {t('publish.visibilityLabel')}
-              </span>
+              </div>
               <ExpirySegmented
                 options={visibilityOptionsWithDefault(t)}
                 value={visibility}
                 onChange={setVisibility}
                 ariaLabelledBy="visibility-label"
               />
-              <span className="text-faint text-xs leading-relaxed">
-                {visibilityHintWithDefault(visibility, t)}
-              </span>
+              <p className="text-faint text-xs leading-relaxed mt-2.5">{visibilityHintWithDefault(visibility, t)}</p>
             </div>
-          </div>
+          </aside>
         </div>
       )}
 
@@ -226,7 +224,7 @@ export default function PublishPage() {
                 />
               </svg>
             </div>
-            <p className="font-display font-semibold text-lg">{t('publish.uploading')}</p>
+            <p className="font-display text-lg">{t('publish.uploading')}</p>
             <p className="text-soft text-sm mt-1" id="uploading-name">
               {uploadingName}
             </p>
@@ -240,8 +238,7 @@ export default function PublishPage() {
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-2.5 mb-2">
               <svg
-                className="w-5 h-5"
-                style={{ color: '#dc2626' }}
+                className="w-5 h-5 text-bad"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -250,14 +247,14 @@ export default function PublishPage() {
               >
                 <path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
               </svg>
-              <span className="font-display font-bold text-2xl tracking-tight">{t('publish.errorTitle')}</span>
+              <span className="font-display text-2xl tracking-tight">{t('publish.errorTitle')}</span>
             </div>
             <p className="text-soft text-sm mb-6" id="error-msg">
               {errorMsg}
             </p>
             <button
               data-action="reset-upload"
-              className="btn-ink rounded-lg text-sm font-medium px-4 py-2"
+              className="btn-ink text-sm px-4 py-2"
               onClick={resetUpload}
             >
               {t('publish.retry')}
@@ -272,8 +269,7 @@ export default function PublishPage() {
           <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-2.5 mb-2">
               <svg
-                className="w-5 h-5"
-                style={{ color: '#10b981' }}
+                className="w-5 h-5 text-ok"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -282,7 +278,7 @@ export default function PublishPage() {
               >
                 <path d="M5 13l4 4L19 7" />
               </svg>
-              <span className="font-display font-bold text-2xl tracking-tight">
+              <span className="font-display text-2xl tracking-tight">
                 {result && result.version > 1
                   ? t('publish.successVersion', { version: result.version })
                   : t('publish.successTitle')}
@@ -291,14 +287,14 @@ export default function PublishPage() {
             <p className="text-soft text-sm mb-2" id="success-expiry">
               {result?.expiryText}
             </p>
-            <div className="flex items-center gap-2 p-2 pl-4 rounded-xl border border-line-strong surface mb-5">
+            <div className="flex items-center gap-2 p-2 pl-4 border-2 border-line-strong surface mb-5">
               <code className="flex-1 mono text-sm truncate" id="success-url">
                 {result?.display}
               </code>
               <button
                 data-action="copy-url"
                 aria-label={t('publish.copyLinkAria')}
-                className="btn-ink shrink-0 rounded-lg text-sm font-medium px-4 py-2"
+                className="btn-ink shrink-0 text-sm px-4 py-2"
                 onClick={copyUrl}
               >
                 {t('publish.copyLink')}
@@ -307,7 +303,7 @@ export default function PublishPage() {
             <div className="flex gap-2">
               <button
                 data-action="reset-upload"
-                className="btn-outline rounded-lg text-sm font-medium px-4 py-2"
+                className="btn-outline text-sm px-4 py-2"
                 onClick={resetUpload}
               >
                 {t('publish.continue')}
@@ -317,14 +313,14 @@ export default function PublishPage() {
                 href={result?.url || '#'}
                 target="_blank"
                 rel="noopener"
-                className="btn-outline rounded-lg text-sm font-medium px-4 py-2 inline-flex items-center"
+                className="btn-outline text-sm px-4 py-2 inline-flex items-center"
               >
                 {t('publish.openNewTab')}
               </a>
               {updateId && (
                 <button
                   data-action="start-fresh-publish"
-                  className="btn-outline rounded-lg text-sm font-medium px-4 py-2"
+                  className="btn-outline text-sm px-4 py-2"
                   onClick={startFreshPublish}
                 >
                   {t('publish.publishNew')}

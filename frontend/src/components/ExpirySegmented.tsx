@@ -1,8 +1,7 @@
 import { useRef } from 'react'
 
-// Segmented radiogroup with roving arrow-key focus. Ported 1:1 from
-// internal/web/app.html:246-254 + app.js:143-162. Active option paints
-// bg var(--ink)/color var(--ink-fg); inactive transparent/var(--fg-soft).
+// Segmented radiogroup with roving arrow-key focus. The checked state is
+// painted by `.seg > button[aria-checked]` in index.css.
 // Generalized so the publish retention control, the token lifetime control and
 // the visibility picker share one implementation (only the options /
 // labelledby / button class differ).
@@ -45,7 +44,7 @@ export default function ExpirySegmented({
 
   return (
     <div
-      className="inline-flex rounded-lg border border-line-strong overflow-hidden"
+      className="seg inline-flex border-2 border-line-strong surface overflow-hidden"
       role="radiogroup"
       aria-labelledby={ariaLabelledBy}
     >
@@ -63,10 +62,6 @@ export default function ExpirySegmented({
             aria-checked={on}
             tabIndex={on ? 0 : -1}
             data-val={o.val}
-            style={{
-              background: on ? 'var(--ink)' : 'transparent',
-              color: on ? 'var(--ink-fg)' : 'var(--fg-soft)',
-            }}
             onClick={() => onChange(o.val)}
             onKeyDown={(e) => onKeyDown(e, i)}
           >

@@ -4,6 +4,7 @@ import i18n from '../i18n'
 import { api, type HttpError } from '../lib/api'
 import { oidcStartURL } from '../lib/auth'
 import { useToast } from '../hooks/useToast'
+import Panel from './Panel'
 
 interface Identity {
   provider: string
@@ -40,7 +41,7 @@ function normalize(body: Partial<Identities>): Identities {
 // Linking is a full page navigation rather than a fetch: it runs the same
 // authorization flow the login page starts, and the browser has to leave for
 // the provider and come back. Unlinking is an ordinary API call.
-export default function IdentitySection() {
+export default function IdentitySection({ index = 1 }: { index?: number }) {
   const { show } = useToast()
   const { t } = useTranslation()
   const [data, setData] = useState<Identities | null>(null)
@@ -79,22 +80,19 @@ export default function IdentitySection() {
   if (!data || (data.identities.length === 0 && data.available.length === 0)) return null
 
   return (
-    <div className="rounded-2xl border border-line surface p-6 mb-6">
-      <div className="max-w-md mb-4">
-        <h2 className="font-display font-bold text-lg mb-1">{t('identity.title')}</h2>
-        <p className="text-soft text-sm leading-relaxed">
-          {data.has_password ? t('identity.descWithPassword') : t('identity.descNoPassword')}
-        </p>
-      </div>
+    <Panel index={index} title={t('identity.title')} tone="accent">
+      <p className="text-soft text-sm leading-relaxed px-5 pt-4 max-w-2xl">
+        {data.has_password ? t('identity.descWithPassword') : t('identity.descNoPassword')}
+      </p>
 
-      <div className="flex flex-col gap-2">
+      <div className="grid gap-3 sm:grid-cols-2 p-5">
         {data.identities.map((identity) => (
           <div
             key={identity.provider}
-            className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3"
+            className="flex items-center justify-between gap-4 border-2 border-line px-4 py-3 surface"
           >
             <div>
-              <div className="text-sm font-medium">{identity.display_name}</div>
+              <div className="text-sm font-bold">{identity.display_name}</div>
               <div className="text-faint text-xs mt-0.5">
                 {t('identity.linkedAt', { date: new Date(identity.linked_at).toLocaleDateString() })}
               </div>
@@ -103,7 +101,7 @@ export default function IdentitySection() {
               onClick={() => unlink(identity.provider, identity.display_name)}
               disabled={!identity.can_unlink}
               title={identity.can_unlink ? undefined : t('identity.lastMethodTitle')}
-              className="text-sm px-3 py-1.5 rounded-lg border border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn-outline text-sm px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {t('identity.unlink')}
             </button>
@@ -114,13 +112,13 @@ export default function IdentitySection() {
           <a
             key={provider.name}
             href={oidcStartURL(provider.name, '/settings')}
-            className="flex items-center justify-between gap-4 rounded-lg border border-line border-dashed px-4 py-3 transition-colors hover:border-[var(--fg)]"
+            className="identity-link flex items-center justify-between gap-4 border-2 border-line border-dashed px-4 py-3"
           >
-            <span className="text-sm font-medium">{provider.display_name}</span>
-            <span className="text-sm text-soft">{t('identity.link')}</span>
+            <span className="text-sm font-bold">{provider.display_name}</span>
+            <span className="text-sm font-bold">{t('identity.link')} →</span>
           </a>
         ))}
       </div>
-    </div>
+    </Panel>
   )
 }

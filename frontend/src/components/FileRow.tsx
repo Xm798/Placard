@@ -1,6 +1,5 @@
-// One file row in the "my files" list (ported from internal/web/app.js:255-292),
-// extended with the versioning entries: update-in-place and the expandable
-// version history panel.
+// One file tile in the "my files" grid, including the versioning entries:
+// update-in-place and the expandable version history panel.
 
 import { useTranslation } from 'react-i18next'
 import { fmtDateTime, fmtExpiry, stripScheme } from '../lib/format'
@@ -40,7 +39,6 @@ function EyeIcon() {
 
 interface FileRowProps {
   file: FileItem
-  isLast: boolean
   expanded: boolean
   versions: VersionsData | null
   busy: boolean // a pin/restore request is in flight for this row
@@ -55,7 +53,6 @@ interface FileRowProps {
 
 export default function FileRow({
   file,
-  isLast,
   expanded,
   versions,
   busy,
@@ -77,80 +74,88 @@ export default function FileRow({
   const visLabel = visibilityLabel(f.visibility, t)
 
   return (
-    <div className={isLast ? '' : 'border-b border-line'}>
-      <div className="row flex items-center gap-4 px-5 py-4">
-        <a
-          className="flex-1 min-w-0 block"
-          href={'/s/' + encodeURIComponent(f.id)}
-          aria-label={t('fileRow.open', { name: label })}
-          style={{ cursor: 'pointer' }}
-        >
-          <div className="font-display font-semibold text-[15px] truncate ul">
-            {f.title || t('fileRow.untitled')}
-          </div>
-          <div className="text-xs text-faint mono mt-0.5 truncate">{display}</div>
-        </a>
-
-        <div className="hidden sm:block text-xs text-faint w-24 text-right">{fmtDateTime(f.create_time)}</div>
-        <div className="hidden md:block text-xs text-soft w-28 text-right">{fmtExpiry(f.expires_at, t)}</div>
-        {visLabel && (
-          <div
-            className="hidden md:block text-xs text-soft w-14 text-right shrink-0"
+    <article className="card flex flex-col">
+      <div className="flex items-center justify-between gap-3 px-5 pt-4">
+        {visLabel ? (
+          <span
+            className="sticker text-[11px] uppercase tracking-wide px-2 py-0.5"
             title={t('fileRow.visibilityTitle', { label: visLabel })}
           >
             {visLabel}
-          </div>
+          </span>
+        ) : (
+          <span />
         )}
-
-        <div
-          className="hidden sm:flex items-center gap-1 text-xs text-soft w-16 justify-end"
+        <span
+          className="flex items-center gap-1 text-xs font-bold"
           title={t('fileRow.viewsTitle')}
           aria-label={t('fileRow.viewsAria', { count: f.view_count })}
         >
           <EyeIcon />
           {' ' + f.view_count}
-        </div>
+        </span>
+      </div>
 
-        <div className="flex gap-1 shrink-0">
-          <button
-            className="btn-outline rounded-lg text-xs font-medium px-3 py-1.5"
-            aria-label={t('fileRow.updateAria', { name: label })}
-            onClick={() => onUpdate(f.id)}
-          >
-            {t('fileRow.update')}
-          </button>
-          <button
-            className="btn-outline rounded-lg text-xs font-medium px-3 py-1.5"
-            aria-label={t('fileRow.versionsAria', { name: label })}
-            aria-expanded={expanded}
-            onClick={() => onToggleVersions(f.id)}
-          >
-            v{f.latest_version}
-            {f.shared_version > 0 ? t('fileRow.pinnedBadge', { version: f.shared_version }) : ''}
-          </button>
-          <button
-            className="btn-outline rounded-lg text-xs font-medium px-3 py-1.5"
-            aria-label={t('fileRow.copyAria', { name: label })}
-            onClick={() => onCopy(f.id)}
-          >
-            {t('common.copy')}
-          </button>
-          <button
-            className="btn-outline rounded-lg text-xs font-medium px-3 py-1.5"
-            aria-label={t('fileRow.shareAria', { name: label })}
-            onClick={() => onShare(f.id)}
-          >
-            {t('fileRow.share')}
-          </button>
-          <button
-            className="btn-danger rounded-lg text-xs font-medium px-3 py-1.5"
-            aria-label={t('fileRow.deleteAria', { name: label })}
-            style={{ color: '#dc2626' }}
-            onClick={() => onDelete(f.id)}
-          >
-            {t('common.delete')}
-          </button>
+      <a
+        className="block px-5 pt-3 pb-4 min-w-0"
+        href={'/s/' + encodeURIComponent(f.id)}
+        aria-label={t('fileRow.open', { name: label })}
+      >
+        <div className="font-display text-xl leading-tight truncate">
+          <span className="ul">{f.title || t('fileRow.untitled')}</span>
         </div>
+        <div className="text-xs text-faint mono mt-1.5 truncate">{display}</div>
+      </a>
+
+      <dl className="tile-meta grid grid-cols-2 text-xs mt-auto">
+        <div className="px-5 py-2.5">
+          <dt className="text-faint">{t('fileRow.createdLabel')}</dt>
+          <dd className="font-bold mt-0.5">{fmtDateTime(f.create_time)}</dd>
+        </div>
+        <div className="px-5 py-2.5">
+          <dt className="text-faint">{t('fileRow.expiresLabel')}</dt>
+          <dd className="font-bold mt-0.5">{fmtExpiry(f.expires_at, t)}</dd>
+        </div>
+      </dl>
+
+      <div className="tile-actions flex flex-wrap gap-2 px-5 py-4">
+        <button
+          className="btn-ink text-xs px-3 py-1.5"
+          aria-label={t('fileRow.updateAria', { name: label })}
+          onClick={() => onUpdate(f.id)}
+        >
+          {t('fileRow.update')}
+        </button>
+        <button
+          className="btn-outline text-xs px-3 py-1.5"
+          aria-label={t('fileRow.versionsAria', { name: label })}
+          aria-expanded={expanded}
+          onClick={() => onToggleVersions(f.id)}
+        >
+          v{f.latest_version}
+          {f.shared_version > 0 ? t('fileRow.pinnedBadge', { version: f.shared_version }) : ''}
+        </button>
+        <button
+          className="btn-outline text-xs px-3 py-1.5"
+          aria-label={t('fileRow.copyAria', { name: label })}
+          onClick={() => onCopy(f.id)}
+        >
+          {t('common.copy')}
+        </button>
+        <button
+          className="btn-outline text-xs px-3 py-1.5"
+          aria-label={t('fileRow.shareAria', { name: label })}
+          onClick={() => onShare(f.id)}
+        >
+          {t('fileRow.share')}
+        </button>
+        <button
+          className="btn-danger text-xs px-3 py-1.5 ml-auto"
+          aria-label={t('fileRow.deleteAria', { name: label })}
+          onClick={() => onDelete(f.id)}
+        >
+          {t('common.delete')}
+        </button>
       </div>
       {expanded && versions && (
         <VersionPanel
@@ -160,6 +165,6 @@ export default function FileRow({
           onRestore={(v) => onRestore(f.id, v)}
         />
       )}
-    </div>
+    </article>
   )
 }

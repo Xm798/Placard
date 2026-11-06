@@ -49,12 +49,12 @@ export default function AdminUserRow({
           <span className="font-medium text-sm">{user.display_name || user.username}</span>
           <span className="mono text-xs text-faint">@{user.username}</span>
           {user.is_admin && (
-            <span className="text-xs px-2 py-0.5 rounded-md border border-line-strong">
+            <span className="text-xs px-2 py-0.5 border-2 border-line-strong">
               {t('adminUserRow.adminBadge')}
             </span>
           )}
           {user.disabled && (
-            <span className="text-xs px-2 py-0.5 rounded-md border border-line-strong text-soft">
+            <span className="text-xs px-2 py-0.5 border-2 border-line-strong text-soft">
               {t('adminUserRow.disabledBadge')}
             </span>
           )}
@@ -76,7 +76,7 @@ export default function AdminUserRow({
           onClick={() => onToggleDisabled(user)}
           disabled={busy || isSelf}
           title={selfTitle}
-          className="text-sm px-3 py-1.5 rounded-lg border border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-outline text-sm px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {user.disabled ? t('adminUserRow.enable') : t('adminUserRow.disable')}
         </button>
@@ -84,14 +84,14 @@ export default function AdminUserRow({
           onClick={() => onToggleAdmin(user)}
           disabled={busy || isSelf}
           title={selfTitle}
-          className="text-sm px-3 py-1.5 rounded-lg border border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-outline text-sm px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {user.is_admin ? t('adminUserRow.demote') : t('adminUserRow.promote')}
         </button>
         <button
           onClick={() => onResetPassword(user)}
           disabled={busy}
-          className="text-sm px-3 py-1.5 rounded-lg border border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-outline text-sm px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {t('adminUserRow.resetPassword')}
         </button>
@@ -99,7 +99,7 @@ export default function AdminUserRow({
           onClick={() => onDelete(user)}
           disabled={busy || isSelf}
           title={selfTitle}
-          className="text-sm px-3 py-1.5 rounded-lg border border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-outline text-sm px-3 py-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {t('common.delete')}
         </button>

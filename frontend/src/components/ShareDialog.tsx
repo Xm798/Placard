@@ -105,9 +105,9 @@ export default function ShareDialog({
       <DialogContent
         showCloseButton={false}
         aria-describedby={undefined}
-        className="surface sm:max-w-lg w-full rounded-2xl border border-line-strong p-6 gap-0"
+        className="card sm:max-w-lg w-full p-6 gap-0"
       >
-        <DialogTitle className="font-display font-bold text-xl mb-1">{t('share.title')}</DialogTitle>
+        <DialogTitle className="font-display text-xl mb-1">{t('share.title')}</DialogTitle>
         <p className="text-faint text-xs mb-4 truncate">{file.title || file.id}</p>
 
         <div className="mb-4">
@@ -136,7 +136,7 @@ export default function ShareDialog({
               <button
                 type="button"
                 onClick={() => copy(shareCode, t('share.codeCopied'))}
-                className="btn-outline rounded-lg text-xs font-medium px-2.5 py-1"
+                className="btn-outline text-xs px-2.5 py-1"
               >
                 {t('common.copy')}
               </button>
@@ -145,7 +145,7 @@ export default function ShareDialog({
               type="button"
               onClick={generateCode}
               disabled={codeBusy}
-              className="btn-outline rounded-lg text-xs font-medium px-2.5 py-1 disabled:opacity-55"
+              className="btn-outline text-xs px-2.5 py-1 disabled:opacity-55"
             >
               {shareCode ? t('share.regenerate') : t('common.generate')}
             </button>
@@ -154,7 +154,7 @@ export default function ShareDialog({
                 type="button"
                 onClick={clearCode}
                 disabled={codeBusy}
-                className="btn-outline rounded-lg text-xs font-medium px-2.5 py-1 disabled:opacity-55"
+                className="btn-outline text-xs px-2.5 py-1 disabled:opacity-55"
               >
                 {t('share.clear')}
               </button>
@@ -169,7 +169,7 @@ export default function ShareDialog({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="btn-outline rounded-lg text-sm font-medium px-4 py-2"
+            className="btn-outline text-sm px-4 py-2"
           >
             {t('share.done')}
           </button>

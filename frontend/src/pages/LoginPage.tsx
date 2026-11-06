@@ -41,7 +41,7 @@ function ProviderButtons({ providers, redirect }: { providers: OIDCProvider[]; r
           <a
             key={p.name}
             href={oidcStartURL(p.name, redirect)}
-            className="w-full h-10 rounded-lg border border-line-strong flex items-center justify-center text-sm font-medium transition-colors hover:border-[var(--fg)]"
+            className="w-full h-10 btn-outline flex items-center justify-center text-sm"
           >
             Continue with {p.display_name}
           </a>
@@ -126,14 +126,14 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
         />
         {error ? (
-          <p role="alert" className="text-sm mb-4" style={{ color: 'var(--destructive, #b3261e)' }}>
+          <p role="alert" className="text-sm mb-4 text-bad">
             {error}
           </p>
         ) : null}
         <button
           type="submit"
           disabled={busy}
-          className="btn-ink w-full h-10 rounded-lg text-sm font-medium disabled:opacity-60"
+          className="btn-ink w-full h-10 text-sm disabled:opacity-60"
         >
           {busy ? 'Signing in…' : 'Sign in'}
         </button>

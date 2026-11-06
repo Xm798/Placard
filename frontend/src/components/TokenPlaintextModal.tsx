@@ -44,16 +44,16 @@ export default function TokenPlaintextModal({ token, onClose }: TokenPlaintextMo
           // (app.js: only the close button or Esc close it). Esc stays enabled.
           onInteractOutside={(e) => e.preventDefault()}
           onPointerDownOutside={(e) => e.preventDefault()}
-          className="surface sm:max-w-lg w-full rounded-2xl border border-line-strong p-6 gap-0"
+          className="card sm:max-w-lg w-full p-6 gap-0"
         >
-          <DialogTitle className="font-display font-bold text-xl mb-1">
+          <DialogTitle className="font-display text-xl mb-1">
             {t('tokenPlaintext.title')}
           </DialogTitle>
-          <p className="text-sm mb-5" style={{ color: '#dc2626' }}>
+          <p className="text-sm mb-5 text-bad">
             {t('tokenPlaintext.warning')}
           </p>
           <div
-            className="flex items-center gap-2 p-2 pl-4 rounded-xl border border-line-strong mb-3"
+            className="flex items-center gap-2 p-2 pl-4 border-2 border-line-strong mb-3"
             style={{ background: 'var(--bg)' }}
           >
             <code className="flex-1 mono text-sm truncate">{token}</code>
@@ -62,7 +62,7 @@ export default function TokenPlaintextModal({ token, onClose }: TokenPlaintextMo
               type="button"
               onClick={copyToken}
               aria-label={t('tokenPlaintext.copyAria')}
-              className="btn-ink shrink-0 rounded-lg text-sm font-medium px-4 py-2"
+              className="btn-ink shrink-0 text-sm px-4 py-2"
             >
               {t('common.copy')}
             </button>
@@ -72,7 +72,7 @@ export default function TokenPlaintextModal({ token, onClose }: TokenPlaintextMo
             <button
               type="button"
               onClick={onClose}
-              className="btn-outline rounded-lg text-sm font-medium px-4 py-2"
+              className="btn-outline text-sm px-4 py-2"
             >
               {t('tokenPlaintext.close')}
             </button>

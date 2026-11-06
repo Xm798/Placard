@@ -49,101 +49,82 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Placard theme — source of truth: internal/web/app.html:80-103.
-   shadcn semantic tokens are remapped onto these exact hex values so
-   Button/Input/Dialog/ToggleGroup render in the Placard palette
-   (near-black ink buttons, the exact --line borders) — not shadcn defaults. */
-:root {
-    /* raw Placard variables (consumed by .btn-ink/.surface/.dropzone/etc.) */
-    --bg: #fafaf8;
-    --surface: #ffffff;
-    --fg: #16150f;
-    --fg-soft: #6b6960;
-    --fg-faint: #6f6d62; /* ≥4.5:1 (share URL / date text, WCAG AA) */
-    --line: #e7e5dd;
-    --line-strong: #d4d2c8;
-    --ink: #16150f;        /* primary button = near black */
-    --ink-fg: #fafaf8;
-    --hover: #f2f1eb;
 
-    /* shadcn semantic tokens mapped onto Placard palette */
-    --radius: 0.5rem;
+/* Placard theme: neo-brutalist. Flat saturated fills, thick ink outlines and
+   hard offset shadows; --radius is 0 so every rounded-* utility squares off.
+   The shadcn semantic tokens are mapped onto the same palette so the ui/
+   primitives match the hand-written classes below. */
+:root {
+    --bg: var(--sun);
+    --surface: #ffffff;
+    --fg: #0a0a0a;
+    --fg-soft: #2e2e2e;
+    --fg-faint: #454545; /* ≥4.5:1 on both --bg and --surface (WCAG AA) */
+    --edge: #0a0a0a;     /* outlines */
+    --shadow: #0a0a0a;   /* offset shadows */
+    --line: var(--edge);
+    --line-strong: var(--edge);
+    --ink: #0a0a0a;      /* selected state: segmented controls, nav */
+    --ink-fg: var(--sun);
+    --on-bright: #0a0a0a; /* text on the bright fills; never flipped in dark */
+    --sun: #ffde59;
+    --accent: #ff6fb5;   /* primary action */
+    --accent-fg: var(--on-bright);
+    --pop: #5cc8ff;      /* hover + focus */
+    --pop-fg: var(--on-bright);
+    --hover: #fff4bf;
+    --ok: #16a34a;
+    --bad: #ff4d4d;      /* fill; text on it stays --fg */
+    --bad-text: #c40000; /* red copy on --surface */
+
+    --radius: 0rem;
     --background: var(--bg);
     --foreground: var(--fg);
     --card: var(--surface);
     --card-foreground: var(--fg);
     --popover: var(--surface);
     --popover-foreground: var(--fg);
-    --primary: var(--ink);
-    --primary-foreground: var(--ink-fg);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-fg);
     --secondary: var(--hover);
     --secondary-foreground: var(--fg);
     --muted: var(--hover);
     --muted-foreground: var(--fg-soft);
-    --accent: var(--hover);
     --accent-foreground: var(--fg);
-    --destructive: #dc2626;
-    --border: var(--line);
-    --input: var(--line-strong);
-    --ring: var(--fg);
-    --chart-1: #16150f;
-    --chart-2: #6b6960;
-    --chart-3: #8b897e;
-    --chart-4: #a3a195;
-    --chart-5: #d4d2c8;
+    --destructive: var(--bad-text);
+    --border: var(--edge);
+    --input: var(--edge);
+    --ring: var(--pop);
+    --chart-1: #ff6fb5;
+    --chart-2: #5cc8ff;
+    --chart-3: var(--sun);
+    --chart-4: #7ee787;
+    --chart-5: #b98cff;
     --sidebar: var(--surface);
     --sidebar-foreground: var(--fg);
-    --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: var(--ink-fg);
+    --sidebar-primary: var(--accent);
+    --sidebar-primary-foreground: var(--accent-fg);
     --sidebar-accent: var(--hover);
     --sidebar-accent-foreground: var(--fg);
-    --sidebar-border: var(--line);
-    --sidebar-ring: var(--fg);
+    --sidebar-border: var(--edge);
+    --sidebar-ring: var(--pop);
 }
 
+/* Dark keeps the saturated fills and flips outlines to near-white; the offset
+   shadow turns yellow because a black one vanishes on a dark page. */
 .dark {
-    --bg: #0e0e0c;
-    --surface: #181814;
-    --fg: #f3f2ea;
-    --fg-soft: #a3a195;
-    --fg-faint: #8b897e; /* ≥4.5:1 in dark */
-    --line: #262620;
-    --line-strong: #34332b;
-    --ink: #f3f2ea;
-    --ink-fg: #16150f;
-    --hover: #201f1a;
-
-    --background: var(--bg);
-    --foreground: var(--fg);
-    --card: var(--surface);
-    --card-foreground: var(--fg);
-    --popover: var(--surface);
-    --popover-foreground: var(--fg);
-    --primary: var(--ink);
-    --primary-foreground: var(--ink-fg);
-    --secondary: var(--hover);
-    --secondary-foreground: var(--fg);
-    --muted: var(--hover);
-    --muted-foreground: var(--fg-soft);
-    --accent: var(--hover);
-    --accent-foreground: var(--fg);
-    --destructive: #ef4444;
-    --border: var(--line);
-    --input: var(--line-strong);
-    --ring: var(--fg);
-    --chart-1: #f3f2ea;
-    --chart-2: #a3a195;
-    --chart-3: #8b897e;
-    --chart-4: #6b6960;
-    --chart-5: #34332b;
-    --sidebar: var(--surface);
-    --sidebar-foreground: var(--fg);
-    --sidebar-primary: var(--ink);
-    --sidebar-primary-foreground: var(--ink-fg);
-    --sidebar-accent: var(--hover);
-    --sidebar-accent-foreground: var(--fg);
-    --sidebar-border: var(--line);
-    --sidebar-ring: var(--fg);
+    --bg: #141414;
+    --surface: #1f1f1f;
+    --fg: #f5f5f5;
+    --fg-soft: #d4d4d4;
+    --fg-faint: #b0b0b0;
+    --edge: #f5f5f5;
+    --shadow: var(--sun);
+    --ink: var(--sun);
+    --ink-fg: var(--on-bright);
+    --hover: #2b2b2b;
+    --ok: #4ade80;
+    --bad-text: #ff7a7a;
 }
 
 @layer base {
@@ -158,64 +139,141 @@
   }
 }
 
-/* ── Placard custom classes — ported verbatim from internal/web/app.html:105-166 ── */
-* { box-sizing: border-box; }
-body {
-  /* F3: system font stack, zero external subresources */
-  font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif;
-  background: var(--bg);
-  color: var(--fg);
-  margin: 0;
-  transition: background .3s, color .3s;
-  -webkit-font-smoothing: antialiased;
+body { -webkit-font-smoothing: antialiased; }
+::selection { background: var(--accent); color: var(--accent-fg); }
+:focus-visible { outline: 3px solid var(--pop); outline-offset: 2px; }
+
+.font-display {
+  font-weight: 900;
+  letter-spacing: -0.03em;
 }
-.font-display { font-family: system-ui, -apple-system, 'Segoe UI', 'Noto Sans SC', sans-serif; }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+h1.font-display { text-transform: uppercase; }
+.mono { font-family: var(--font-mono); }
 
-.page-enter { animation: rise .35s cubic-bezier(.16,1,.3,1); }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.page-enter { animation: rise .3s cubic-bezier(.2,1.5,.4,1); }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
-.btn-ink { background: var(--ink); color: var(--ink-fg); transition: transform .15s, opacity .15s; }
-.btn-ink:hover { opacity: .88; transform: translateY(-1px); }
-.btn-ink:active { transform: translateY(0); }
+.card {
+  background: var(--surface);
+  border: 3px solid var(--edge);
+  box-shadow: 6px 6px 0 var(--shadow);
+}
 
-.btn-outline { border: 1px solid var(--line-strong); color: var(--fg); background: transparent; transition: background .15s, border-color .15s; }
-.btn-outline:hover { background: var(--hover); border-color: var(--fg-faint); }
+/* Buttons sit on a hard shadow and travel into it when pressed. */
+.btn-ink, .btn-outline, .btn-danger {
+  border: 2.5px solid var(--edge);
+  box-shadow: 3px 3px 0 var(--shadow);
+  font-weight: 800;
+  transition: transform .08s, box-shadow .08s, background .08s;
+}
+.btn-ink { background: var(--accent); color: var(--accent-fg); }
+.btn-outline { background: var(--surface); color: var(--fg); }
+.btn-danger { background: var(--bad); color: var(--on-bright); }
+.btn-outline:hover { background: var(--pop); color: var(--pop-fg); }
+.btn-ink:hover:not(:disabled), .btn-outline:hover:not(:disabled), .btn-danger:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--shadow);
+}
+.btn-ink:active:not(:disabled), .btn-outline:active:not(:disabled), .btn-danger:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 0 0 0 var(--shadow);
+}
+.btn-ink:disabled, .btn-outline:disabled, .btn-danger:disabled { box-shadow: none; }
 
 .surface { background: var(--surface); }
 .border-line { border-color: var(--line); }
 .border-line-strong { border-color: var(--line-strong); }
 .text-soft { color: var(--fg-soft); }
 .text-faint { color: var(--fg-faint); }
+.text-bad { color: var(--bad-text); }
+.text-ok { color: var(--ok); }
+.text-accent { color: var(--accent); }
+
+input:focus, select:focus, textarea:focus { box-shadow: 3px 3px 0 var(--pop); }
+
+.seg { box-shadow: 3px 3px 0 var(--shadow); }
+.seg > button + button { border-left: 2px solid var(--edge); }
+.seg > button { font-weight: 700; white-space: nowrap; background: transparent; color: var(--fg); transition: background .08s; }
+.seg > button[aria-checked="true"] { background: var(--ink); color: var(--ink-fg); }
+.seg > button[aria-checked="false"]:hover { background: var(--pop); color: var(--pop-fg); }
+
+.sidebar { border-right: 3px solid var(--edge); }
+.sidebar-foot { border-top: 3px solid var(--edge); background: var(--bg); }
+.side-link { border: 2.5px solid transparent; transition: transform .1s, background .08s; }
+.side-link:hover { border-color: var(--edge); background: var(--pop); color: var(--pop-fg); transform: translateX(4px); }
+.side-link.active { border-color: var(--edge); background: var(--ink); color: var(--ink-fg); box-shadow: 4px 4px 0 var(--accent); transform: translateX(4px); }
+
+.sticker { background: var(--accent); color: var(--accent-fg); border: 2px solid var(--edge); font-weight: 800; transform: rotate(-2deg); }
+.sticker-pop { background: var(--pop); color: var(--pop-fg); transform: rotate(3deg); }
+.sticker-plain { background: var(--surface); color: var(--fg); }
+.tile-meta { border-top: 2px solid var(--edge); border-bottom: 2px solid var(--edge); background: var(--hover); }
+.tile-meta > div + div { border-left: 2px solid var(--edge); }
+.eyebrow { display: inline-block; background: var(--ink); color: var(--ink-fg); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .75rem; padding: 2px 8px; transform: rotate(-1.5deg); }
+
+.logo-mark {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border: 2.5px solid var(--edge);
+  box-shadow: 2px 2px 0 var(--shadow);
+  transform: rotate(-6deg);
+  transition: transform .15s;
+}
+a:hover > .logo-mark { transform: rotate(6deg) scale(1.08); }
+.logo-mark-plain { background: var(--surface); color: var(--fg); }
 
 .dropzone {
-  border: 2px dashed var(--line-strong);
-  transition: all .25s cubic-bezier(.16,1,.3,1);
-  background:
-    radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0);
-  background-size: 22px 22px;
+  background-color: var(--surface);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 14px, var(--hover) 14px 28px);
+  border: 3px dashed var(--edge);
+  box-shadow: 8px 8px 0 var(--shadow);
+  transition: transform .12s, box-shadow .12s, background-color .12s;
 }
-.dropzone:hover { border-color: var(--fg-faint); }
+.dropzone:hover { transform: translate(-2px, -2px); box-shadow: 10px 10px 0 var(--shadow); }
 .dropzone.dragover {
-  border-color: var(--fg);
-  transform: scale(1.008);
-  background-color: var(--hover);
+  border-style: solid;
+  background-color: var(--accent);
+  background-image: none;
+  transform: translate(-4px, -4px) rotate(-.5deg);
+  box-shadow: 12px 12px 0 var(--shadow);
+}
+.dropzone-icon {
+  background: var(--pop);
+  color: var(--pop-fg);
+  border: 2.5px solid var(--edge);
+  box-shadow: 3px 3px 0 var(--shadow);
 }
 
-.row { transition: background .15s; }
+.row { transition: background .08s; }
 .row:hover { background: var(--hover); }
 
-/* danger button hover (replaces removed inline onmouseover; pairs with script-src 'self') */
-.btn-danger { transition: background .15s; }
-.btn-danger:hover { background: rgba(220,38,38,.1); }
+.toast {
+  transform: translate(-50%, 200%);
+  opacity: 0;
+  transition: transform .3s cubic-bezier(.2,1.5,.4,1), opacity .2s;
+}
+.toast.show { transform: translate(-50%, 0); opacity: 1; }
 
-.toast { transform: translateY(150%); opacity: 0; transition: all .4s cubic-bezier(.16,1,.3,1); }
-.toast.show { transform: translateY(0); opacity: 1; }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg); border-left: 2px solid var(--edge); }
+::-webkit-scrollbar-thumb { background: var(--accent); border: 2px solid var(--edge); }
 
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 4px; }
-
-/* underline link animation */
 .ul { position: relative; }
-.ul::after { content:''; position:absolute; left:0; bottom:-2px; width:100%; height:1.5px; background:var(--fg); transform:scaleX(0); transform-origin:right; transition:transform .25s; }
+.ul::after { content:''; position:absolute; left:0; bottom:-3px; width:100%; height:3px; background:var(--accent); transform:scaleX(0); transform-origin:right; transition:transform .2s; }
 .ul:hover::after { transform:scaleX(1); transform-origin:left; }
+
+.auth-poster {
+  background: var(--accent);
+  color: var(--on-bright);
+  border-right: 3px solid var(--edge);
+  background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,.22) 1.5px, transparent 0);
+  background-size: 18px 18px;
+}
+
+.panel-band { border-bottom: 3px solid var(--edge); color: var(--on-bright); }
+.panel-band[data-tone="pop"] { background: var(--pop); }
+.panel-band[data-tone="accent"] { background: var(--accent); }
+.panel-band[data-tone="sun"] { background: var(--sun); }
+.panel-index { background: var(--on-bright); color: var(--sun); }
+.identity-link { transition: background .08s; }
+.identity-link:hover { background: var(--pop); color: var(--pop-fg); border-style: solid; }
+.avatar { background: var(--pop); color: var(--pop-fg); }

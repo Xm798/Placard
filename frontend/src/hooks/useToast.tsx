@@ -43,13 +43,12 @@ export function ToastViewport() {
       role="status"
       aria-live="polite"
       className={
-        'toast fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full border border-line-strong surface px-5 py-2.5 text-sm shadow-xl flex items-center gap-2' +
+        'toast card fixed bottom-6 left-1/2 z-50 px-5 py-2.5 text-sm font-bold flex items-center gap-2' +
         (ctx.visible ? ' show' : '')
       }
     >
       <svg
-        className="w-4 h-4"
-        style={{ color: '#10b981' }}
+        className="w-4 h-4 text-ok"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

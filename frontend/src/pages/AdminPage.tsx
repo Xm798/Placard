@@ -206,21 +206,21 @@ export default function AdminPage() {
   return (
     <section>
       <div className="pt-12 pb-8">
-        <h1 className="font-display font-extrabold text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
+        <h1 className="font-display text-4xl sm:text-5xl tracking-[-0.02em] mb-2">
           {t('admin.title')}
         </h1>
         <p className="text-soft">{t('admin.sub')}</p>
       </div>
 
       {settings && (
-        <div className="rounded-2xl border border-line surface p-6 mb-6">
+        <div className="card p-6 mb-6">
           <div className="max-w-md mb-4">
-            <h2 className="font-display font-bold text-lg mb-1">{t('admin.settingsTitle')}</h2>
+            <h2 className="font-display text-lg mb-1">{t('admin.settingsTitle')}</h2>
             <p className="text-soft text-sm leading-relaxed">{t('admin.settingsDesc')}</p>
           </div>
 
           <div className="flex flex-col gap-3">
-            <label className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3">
+            <label className="flex items-center justify-between gap-4 border-2 border-line px-4 py-3">
               <span className="text-sm">
                 {t('admin.registrationOpen')}
                 <span className="block text-faint text-xs mt-0.5">{t('admin.registrationOpenHint')}</span>
@@ -237,7 +237,7 @@ export default function AdminPage() {
               />
             </label>
 
-            <label className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3">
+            <label className="flex items-center justify-between gap-4 border-2 border-line px-4 py-3">
               <span className="text-sm">
                 {t('admin.autoProvision')}
                 <span className="block text-faint text-xs mt-0.5">{t('admin.autoProvisionHint')}</span>
@@ -254,7 +254,7 @@ export default function AdminPage() {
               />
             </label>
 
-            <div className="flex items-center justify-between gap-4 rounded-lg border border-line px-4 py-3">
+            <div className="flex items-center justify-between gap-4 border-2 border-line px-4 py-3">
               <label className="text-sm" htmlFor="upload-limit">
                 {t('admin.uploadLimit')}
                 <span className="block text-faint text-xs mt-0.5">{t('admin.uploadLimitHint')}</span>
@@ -267,9 +267,9 @@ export default function AdminPage() {
                   step="1"
                   value={uploadMB}
                   onChange={(e) => setUploadMB(e.target.value)}
-                  className="w-24 rounded-lg border border-line-strong px-3 py-1.5 text-sm bg-transparent"
+                  className="w-24 border-2 border-line-strong px-3 py-1.5 text-sm bg-transparent"
                 />
-                <button onClick={saveUploadLimit} className="text-sm px-3 py-1.5 rounded-lg border border-line-strong">
+                <button onClick={saveUploadLimit} className="btn-outline text-sm px-3 py-1.5">
                   {t('common.save')}
                 </button>
               </div>
@@ -279,11 +279,11 @@ export default function AdminPage() {
       )}
 
       <div className="flex items-end justify-between mb-3">
-        <h2 className="font-display font-bold text-lg">{t('admin.accounts')}</h2>
+        <h2 className="font-display text-lg">{t('admin.accounts')}</h2>
         <span className="text-soft text-sm">{t('admin.accountCount', { count: state.total })}</span>
       </div>
 
-      <div className="rounded-2xl border border-line overflow-hidden surface">
+      <div className="card overflow-hidden">
         {state.items.map((u, i) => (
           <AdminUserRow
             key={u.id}
@@ -302,7 +302,7 @@ export default function AdminPage() {
       {totalPages > 1 && (
         <div className="flex items-center justify-end gap-2 mt-5 text-sm text-soft">
           <button
-            className="btn-outline rounded-lg px-3 py-1.5"
+            className="btn-outline px-3 py-1.5"
             aria-label={t('common.prevPage')}
             disabled={state.page <= 1}
             onClick={() => loadUsers(state.page - 1)}
@@ -310,7 +310,7 @@ export default function AdminPage() {
             {t('common.prevPage')}
           </button>
           <button
-            className="btn-outline rounded-lg px-3 py-1.5"
+            className="btn-outline px-3 py-1.5"
             aria-label={t('common.nextPage')}
             disabled={state.page >= totalPages}
             onClick={() => loadUsers(state.page + 1)}

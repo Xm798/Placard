@@ -58,9 +58,9 @@ export default function TokenCreateModal({ open, onOpenChange, onCreated }: Toke
           e.preventDefault()
           nameRef.current?.focus()
         }}
-        className="surface sm:max-w-lg w-full rounded-2xl border border-line-strong p-6 gap-0"
+        className="card sm:max-w-lg w-full p-6 gap-0"
       >
-        <DialogTitle className="font-display font-bold text-xl mb-4">{t('tokenCreate.title')}</DialogTitle>
+        <DialogTitle className="font-display text-xl mb-4">{t('tokenCreate.title')}</DialogTitle>
         <div className="mb-4">
           <label className="text-faint text-sm block mb-1.5" htmlFor="token-name">
             {t('tokenCreate.name')}
@@ -71,7 +71,7 @@ export default function TokenCreateModal({ open, onOpenChange, onCreated }: Toke
             id="token-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-transparent border border-line-strong rounded-lg focus:border-[var(--fg)] outline-none px-3 py-2 transition-colors"
+            className="w-full bg-transparent border-2 border-line-strong focus:border-[var(--fg)] outline-none px-3 py-2 transition-colors"
             placeholder={t('tokenCreate.namePlaceholder')}
           />
         </div>
@@ -91,14 +91,14 @@ export default function TokenCreateModal({ open, onOpenChange, onCreated }: Toke
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="btn-outline rounded-lg text-sm font-medium px-4 py-2"
+            className="btn-outline text-sm px-4 py-2"
           >
             {t('common.cancel')}
           </button>
           <button
             type="button"
             onClick={submit}
-            className="btn-ink rounded-lg text-sm font-medium px-4 py-2"
+            className="btn-ink text-sm px-4 py-2"
           >
             {t('common.generate')}
           </button>

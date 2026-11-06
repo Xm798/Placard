@@ -101,14 +101,14 @@ export default function RegisterPage() {
           hint="At least 8 characters. There is no password reset by email — an admin resets it."
         />
         {error ? (
-          <p role="alert" className="text-sm mb-4" style={{ color: 'var(--destructive, #b3261e)' }}>
+          <p role="alert" className="text-sm mb-4 text-bad">
             {error}
           </p>
         ) : null}
         <button
           type="submit"
           disabled={busy}
-          className="btn-ink w-full h-10 rounded-lg text-sm font-medium disabled:opacity-60"
+          className="btn-ink w-full h-10 text-sm disabled:opacity-60"
         >
           {busy ? 'Creating…' : firstAccount ? 'Create admin account' : 'Create account'}
         </button>

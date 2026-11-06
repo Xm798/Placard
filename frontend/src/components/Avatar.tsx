@@ -32,9 +32,8 @@ export default function Avatar({ authzId, name, className }: AvatarProps) {
   return (
     <div
       className={
-        'rounded-full flex items-center justify-center font-semibold overflow-hidden shrink-0 ' + sizeClass
+        'avatar flex items-center justify-center font-black border-2 border-line-strong overflow-hidden shrink-0 ' + sizeClass
       }
-      style={{ background: 'var(--ink)', color: 'var(--ink-fg)' }}
     >
       {showImg ? (
         <img

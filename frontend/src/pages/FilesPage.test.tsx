@@ -163,7 +163,7 @@ describe('FilesPage', () => {
     renderPage()
     await waitFor(() => expect(screen.getByText('First page')).toBeInTheDocument())
 
-    const firstRow = screen.getByText('First page').closest('.row') as HTMLElement
+    const firstRow = screen.getByText('First page').closest('article') as HTMLElement
     await user.click(within(firstRow).getByRole('button', { name: 'Delete: First page' }))
 
     await waitFor(() =>

@@ -38,15 +38,14 @@ export default function TokenRow({ token: t, isLast, onRevoke, onDelete }: Token
   return (
     <div className={'row flex items-center gap-4 px-5 py-4' + (isLast ? '' : ' border-b border-line')}>
       <div className="flex-1 min-w-0">
-        <div className="font-display font-semibold text-[15px] truncate">
+        <div className="font-display text-[15px] truncate">
           {t.name || tr('tokenRow.unnamed')}
         </div>
         <div className="text-xs text-faint mt-0.5">{meta}</div>
       </div>
       {t.revoked ? (
         <button
-          className="btn-danger rounded-lg text-xs font-medium px-3 py-1.5 shrink-0"
-          style={{ color: '#dc2626' }}
+          className="btn-danger text-xs px-3 py-1.5 shrink-0"
           aria-label={tr('tokenRow.deleteAria', { name: t.name || t.id })}
           onClick={() => onDelete(String(t.id))}
         >
@@ -54,8 +53,7 @@ export default function TokenRow({ token: t, isLast, onRevoke, onDelete }: Token
         </button>
       ) : (
         <button
-          className="btn-danger rounded-lg text-xs font-medium px-3 py-1.5 shrink-0"
-          style={{ color: '#dc2626' }}
+          className="btn-danger text-xs px-3 py-1.5 shrink-0"
           aria-label={tr('tokenRow.revokeAria', { name: t.name || t.id })}
           onClick={() => onRevoke(String(t.id))}
         >

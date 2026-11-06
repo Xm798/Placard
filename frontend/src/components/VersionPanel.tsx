@@ -31,7 +31,7 @@ export default function VersionPanel({ data, busy = false, onPin, onRestore }: V
       <div className="flex items-center gap-2 mb-2 text-xs">
         <span className="text-faint">{t('versions.sharedVersion')}</span>
         <select
-          className="border border-line-strong rounded-lg px-2 py-1 bg-transparent"
+          className="border-2 border-line-strong px-2 py-1 bg-transparent"
           aria-label={t('versions.sharedVersion')}
           value={String(data.shared_version)}
           disabled={busy}
@@ -55,7 +55,7 @@ export default function VersionPanel({ data, busy = false, onPin, onRestore }: V
               <span className="text-faint w-16 text-right shrink-0">{t('versions.latest')}</span>
             ) : (
               <button
-                className="btn-outline rounded-lg px-2 py-1 w-16 shrink-0"
+                className="btn-outline px-2 py-1 w-16 shrink-0"
                 aria-label={t('versions.restoreAria', { version: v.version })}
                 disabled={busy}
                 onClick={() => onRestore(v.version)}

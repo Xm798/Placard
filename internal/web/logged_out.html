@@ -4,21 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{.Title}}</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316150f'/%3E%3Ctext x='16' y='21' font-family='ui-monospace,monospace' font-size='13' font-weight='bold' fill='%23fafaf8' text-anchor='middle'%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='1.5' y='1.5' width='29' height='29' fill='%23ff6fb5' stroke='%230a0a0a' stroke-width='3'/%3E%3Ctext x='16' y='21' font-family='ui-monospace,monospace' font-size='13' font-weight='900' fill='%230a0a0a' text-anchor='middle'%3E%26lt%3B/%26gt%3B%3C/text%3E%3C/svg%3E">
 <!-- F3: zero external subresources; system font stack only. No JavaScript, so
      nothing here can start a fresh login on its own. Dark mode via CSS media
      query (no JS needed under CSP script-src 'self'). -->
 <style>
-:root{--bg:#fafaf8;--surface:#fff;--fg:#16150f;--fg-soft:#6b6960;--line-strong:#d4d2c8;--ink:#16150f;--ink-fg:#fafaf8;}
-@media (prefers-color-scheme:dark){:root{--bg:#0e0e0c;--surface:#181814;--fg:#f3f2ea;--fg-soft:#a3a195;--line-strong:#34332b;--ink:#f3f2ea;--ink-fg:#16150f;}}
+:root{--bg:#ffde59;--surface:#fff;--fg:#0a0a0a;--fg-soft:#2e2e2e;--line:#0a0a0a;--line-strong:#0a0a0a;--edge:#0a0a0a;--shadow:#0a0a0a;--ink:#0a0a0a;--ink-fg:#ffde59;--accent:#ff6fb5;--pop:#5cc8ff;--hover:#fff4bf;--danger:#c40000;}
+@media (prefers-color-scheme:dark){:root{--bg:#141414;--surface:#1f1f1f;--fg:#f5f5f5;--fg-soft:#d4d4d4;--line:#f5f5f5;--line-strong:#f5f5f5;--edge:#f5f5f5;--shadow:#ffde59;--ink:#ffde59;--ink-fg:#0a0a0a;--hover:#2b2b2b;--danger:#ff7a7a;}}
 *{box-sizing:border-box;}
 html,body{height:100%;margin:0;}
-body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:32px;-webkit-font-smoothing:antialiased;}
-.card{text-align:center;max-width:420px;}
-.mark{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:18px;background:var(--ink);color:var(--ink-fg);margin-bottom:20px;}
-.title{font-weight:800;font-size:26px;letter-spacing:-.02em;margin:0 0 8px;}
-.sub{color:var(--fg-soft);font-size:14px;line-height:1.6;margin:0 0 24px;}
-.btn{display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;border:1px solid var(--line-strong);background:var(--ink);color:var(--ink-fg);}
+body{font-family:system-ui,-apple-system,"Segoe UI","Noto Sans SC",sans-serif;background:var(--bg);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:32px;-webkit-font-smoothing:antialiased;}
+.card{text-align:center;max-width:440px;background:var(--surface);border:3px solid var(--edge);box-shadow:8px 8px 0 var(--shadow);padding:36px 32px;}
+.mark{width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;font:900 18px ui-monospace,Menlo,monospace;background:var(--accent);color:#0a0a0a;border:3px solid var(--edge);box-shadow:3px 3px 0 var(--shadow);transform:rotate(-6deg);margin-bottom:22px;}
+.title{font-weight:900;font-size:28px;letter-spacing:-.03em;text-transform:uppercase;margin:0 0 10px;}
+.sub{color:var(--fg-soft);font-size:14px;line-height:1.6;margin:0 0 26px;}
+.btn{display:inline-flex;align-items:center;height:42px;padding:0 20px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-decoration:none;border:2.5px solid var(--edge);background:var(--accent);color:#0a0a0a;box-shadow:4px 4px 0 var(--shadow);transition:transform .08s,box-shadow .08s;}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--shadow);}
+.btn:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--shadow);}
 </style>
 </head>
 <body>
