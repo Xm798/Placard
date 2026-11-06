@@ -92,16 +92,16 @@ func TestActiveReportsDisabledAndMissing(t *testing.T) {
 	seedAccount(t, users, "u_alice", "alice", "")
 	ctx := context.Background()
 
-	if active, err := users.Active(ctx, "u_alice"); err != nil || !active {
+	if active, _, err := users.Active(ctx, "u_alice"); err != nil || !active {
 		t.Fatalf("Active(enabled) = %v, %v; want true, nil", active, err)
 	}
-	if active, err := users.Active(ctx, "u_ghost"); err != nil || active {
+	if active, _, err := users.Active(ctx, "u_ghost"); err != nil || active {
 		t.Fatalf("Active(missing) = %v, %v; want false, nil", active, err)
 	}
 	if err := db.Model(&model.User{}).Where("id = ?", "u_alice").Update("disabled", true).Error; err != nil {
 		t.Fatalf("disable: %v", err)
 	}
-	if active, err := users.Active(ctx, "u_alice"); err != nil || active {
+	if active, _, err := users.Active(ctx, "u_alice"); err != nil || active {
 		t.Fatalf("Active(disabled) = %v, %v; want false, nil", active, err)
 	}
 }

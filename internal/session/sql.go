@@ -52,6 +52,7 @@ func (s *SQLStore) Create(ctx context.Context, d Data) (string, error) {
 		DisplayName: d.DisplayName,
 		AvatarURL:   d.AvatarURL,
 		OIDCFlow:    marshalFlow(d.OIDC),
+		Epoch:       d.Epoch,
 		CreatedAt:   model.Timestamp(d.CreatedAt),
 		ExpiresAt:   model.Timestamp(now.Add(s.idleTTL)),
 	}
@@ -88,6 +89,7 @@ func (s *SQLStore) Get(ctx context.Context, id string) (Data, error) {
 		DisplayName: row.DisplayName,
 		AvatarURL:   row.AvatarURL,
 		OIDC:        unmarshalFlow(row.OIDCFlow),
+		Epoch:       row.Epoch,
 		CreatedAt:   row.CreatedAt,
 	}, nil
 }
@@ -105,6 +107,7 @@ func (s *SQLStore) Update(ctx context.Context, id string, d Data) error {
 			"display_name": d.DisplayName,
 			"avatar_url":   d.AvatarURL,
 			"oidc_flow":    marshalFlow(d.OIDC),
+			"epoch":        d.Epoch,
 			"created_at":   model.Timestamp(d.CreatedAt),
 		})
 	if res.Error != nil {

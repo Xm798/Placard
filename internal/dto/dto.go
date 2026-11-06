@@ -302,6 +302,16 @@ type IdentitiesResponse struct {
 	Available []OIDCProvider `json:"available,omitempty"`
 }
 
+// ProfileResponse is GET /api/account: what the settings page shows about the
+// signed-in account. HasPassword decides whether changing the password asks
+// for the current one or sets a first one.
+type ProfileResponse struct {
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	Email       string `json:"email,omitempty"`
+	HasPassword bool   `json:"has_password"`
+}
+
 // AccountResponse is the authenticated account, returned by register and login.
 // Email is omitted when the account has none. Nothing credential-shaped is ever
 // serialized here — no password hash, no linked-identity subjects.

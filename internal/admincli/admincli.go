@@ -298,7 +298,7 @@ func runResetPassword(ctx context.Context, args []string, env Env) error {
 	if err != nil {
 		return err
 	}
-	if _, err := users.SetPasswordHash(ctx, user.ID, hash); err != nil {
+	if _, err := users.SetPasswordRevokingSessions(ctx, user.ID, hash); err != nil {
 		return err
 	}
 	// An account provisioned through a provider has no local credential row,

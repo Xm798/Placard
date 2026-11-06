@@ -23,6 +23,10 @@ type Data struct {
 	DisplayName string    `json:"display_name"`
 	AvatarURL   string    `json:"avatar_url,omitempty"`
 	CreatedAt   time.Time `json:"created_at"`
+	// Epoch is the account's session generation at sign-in. The auth middleware
+	// refuses a session whose epoch no longer matches the account's, which is
+	// how a password change signs out every other browser.
+	Epoch int `json:"epoch,omitempty"`
 
 	// OIDC carries the in-flight authorization request while the browser is
 	// away at the identity provider, and is cleared by the callback that

@@ -98,23 +98,24 @@ func (r *UserRepo) Create(ctx context.Context, u *model.User) error {
 	return r.db.WithContext(ctx).Create(u).Error
 }
 
-// Active reports whether id names an account that may authenticate right now.
-// A missing row and a disabled one are both false with a nil error: the auth
-// middleware turns either into a 401, and only a real infrastructure failure
-// (non-nil error) into a 503.
-func (r *UserRepo) Active(ctx context.Context, id string) (bool, error) {
+// Active reports whether id names an account that may authenticate right now,
+// and the session epoch a login session must carry. A missing row and a
+// disabled one are both false with a nil error: the auth middleware turns
+// either into a 401, and only a real infrastructure failure (non-nil error)
+// into a 503.
+func (r *UserRepo) Active(ctx context.Context, id string) (bool, int, error) {
 	var u model.User
 	err := r.db.WithContext(ctx).
-		Select("disabled").
+		Select("disabled", "session_epoch").
 		Where("id = ?", id).
 		First(&u).Error
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
-		return false, nil
+		return false, 0, nil
 	case err != nil:
-		return false, err
+		return false, 0, err
 	}
-	return !u.Disabled, nil
+	return !u.Disabled, u.SessionEpoch, nil
 }
 
 // SetDefaultVisibility updates id's default_visibility preference.
@@ -275,10 +276,32 @@ func (r *UserRepo) SetAdmin(ctx context.Context, id string, isAdmin bool) (int64
 	return r.update(ctx, id, map[string]interface{}{"is_admin": isAdmin})
 }
 
-// SetPasswordHash replaces the account's local password. The caller passes an
-// already-encoded argon2id PHC string — this layer never sees a plaintext.
-func (r *UserRepo) SetPasswordHash(ctx context.Context, id, hash string) (int64, error) {
-	return r.update(ctx, id, map[string]interface{}{"password_hash": hash})
+// SetPasswordRevokingSessions replaces the account's local password and raises
+// its session epoch in the same statement, so every login session opened
+// before the change stops authenticating. A new password is most often set
+// because the old one leaked, and the sessions it opened are what the leak
+// bought. Personal access tokens are separate credentials and survive it.
+//
+// It returns the new epoch, for a caller that opens a session to replace its
+// own, and gorm.ErrRecordNotFound when the account does not exist. The caller
+// passes an already-encoded argon2id PHC string — this layer never sees a
+// plaintext.
+func (r *UserRepo) SetPasswordRevokingSessions(ctx context.Context, id, hash string) (int, error) {
+	var epoch int
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&model.User{}).Where("id = ?", id).Updates(map[string]interface{}{
+			"password_hash": hash,
+			"session_epoch": gorm.Expr("session_epoch + 1"),
+		})
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return tx.Model(&model.User{}).Where("id = ?", id).Pluck("session_epoch", &epoch).Error
+	})
+	return epoch, err
 }
 
 // DeleteTx removes the account row inside the caller's transaction. Every

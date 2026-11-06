@@ -149,6 +149,10 @@ type User struct {
 	LastActiveAt      time.Time `gorm:"column:last_active_at;not null;default:'1970-01-01 00:00:00'" json:"-"` // 5min-throttled touch
 	CreateTime        time.Time `gorm:"not null;autoCreateTime" json:"-"`
 	UpdateTime        time.Time `gorm:"not null;autoUpdateTime" json:"-"`
+	// SessionEpoch is the generation a login session must carry to be honoured.
+	// Raising it signs the account out everywhere: session stores are keyed by
+	// session id, so this is how one change reaches every session at once.
+	SessionEpoch int `gorm:"column:session_epoch;not null;default:0" json:"-"`
 }
 
 func (User) TableName() string { return "user" }
@@ -311,6 +315,8 @@ type Session struct {
 	// with exactly the session's lifetime — the callback that consumes it
 	// clears it, and an abandoned flow goes when the session does.
 	OIDCFlow string `gorm:"column:oidc_flow;size:1024;not null;default:''" json:"-"`
+	// Epoch is the account's User.SessionEpoch when the session was opened.
+	Epoch int `gorm:"column:epoch;not null;default:0" json:"-"`
 	// autoCreateTime is off on both time columns: the store is their only
 	// writer, and the absolute cap is measured against exactly what it wrote.
 	CreatedAt time.Time `gorm:"column:created_at;not null;autoCreateTime:false" json:"-"`

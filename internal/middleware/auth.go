@@ -61,10 +61,14 @@ type AuthOptions struct {
 	// 503, so a database blip never mass-logs-out live users. Left nil the
 	// check is skipped — for tests that run no database.
 	//
+	// sessionEpoch is the account's current session generation. A login
+	// session opened on any other one is refused as well, which is how a
+	// password change signs the account out everywhere (see session.Data.Epoch).
+	//
 	// The dev_mock channel deliberately does not consult it: it is a local-only
 	// bypass of credential checking altogether (config.Validate rejects it
 	// outside APP_ENV=local), and main.go materializes its account row at boot.
-	AccountStatus func(ctx context.Context, userID string) (bool, error)
+	AccountStatus func(ctx context.Context, userID string) (active bool, sessionEpoch int, err error)
 }
 
 // errAccountInactive marks the "credential is valid, account is not" verdict so
@@ -73,17 +77,18 @@ type AuthOptions struct {
 var errAccountInactive = errors.New("middleware: account disabled or missing")
 
 // accountActive consults AccountStatus, if one is wired. It returns the error
-// the caller must return, or nil to let the request proceed.
-func (o AuthOptions) accountActive(c *fiber.Ctx, userID string, log *zap.Logger) error {
+// the caller must return, or nil to let the request proceed. A nil session
+// marks a PAT, which carries no epoch to compare.
+func (o AuthOptions) accountActive(c *fiber.Ctx, userID string, sess *session.Data, log *zap.Logger) error {
 	if o.AccountStatus == nil {
 		return nil
 	}
-	active, err := o.AccountStatus(c.UserContext(), userID)
+	active, epoch, err := o.AccountStatus(c.UserContext(), userID)
 	if err != nil {
 		log.Error("account status lookup failed", zap.Error(err))
 		return apperr.Unavailable()
 	}
-	if !active {
+	if !active || (sess != nil && sess.Epoch != epoch) {
 		return errAccountInactive
 	}
 	return nil
@@ -215,7 +220,7 @@ func NewAuth(opts AuthOptions) fiber.Handler {
 				opts.hitFailure(c)
 				return unauthorized()
 			}
-			if err := opts.accountActive(c, id.AuthzID, log); err != nil {
+			if err := opts.accountActive(c, id.AuthzID, nil, log); err != nil {
 				if errors.Is(err, errAccountInactive) {
 					return unauthorized()
 				}
@@ -273,7 +278,7 @@ func shareSession(c *fiber.Ctx, opts AuthOptions, log *zap.Logger) error {
 	if d.AuthzID == "" {
 		return c.Next()
 	}
-	if err := opts.accountActive(c, d.AuthzID, log); err != nil {
+	if err := opts.accountActive(c, d.AuthzID, &d, log); err != nil {
 		return c.Next()
 	}
 	userctx.Set(c, userctx.Identity{
@@ -332,7 +337,7 @@ func authenticateSession(c *fiber.Ctx, opts AuthOptions, log *zap.Logger) error 
 		log.Debug("session carries no authz id, treating as unauthenticated")
 		return unauthenticated(c)
 	}
-	if err := opts.accountActive(c, d.AuthzID, log); err != nil {
+	if err := opts.accountActive(c, d.AuthzID, &d, log); err != nil {
 		if errors.Is(err, errAccountInactive) {
 			return unauthenticated(c)
 		}

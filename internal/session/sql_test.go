@@ -82,6 +82,25 @@ func TestSQLCreateGetDelete(t *testing.T) {
 	}
 }
 
+func TestSQLEpochRoundTrip(t *testing.T) {
+	s, _, _ := newSQLTestStore(t)
+	ctx := context.Background()
+
+	id, err := s.Create(ctx, Data{AuthzID: "on_abc", CreatedAt: time.Now(), Epoch: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d, err := s.Get(ctx, id); err != nil || d.Epoch != 3 {
+		t.Fatalf("get after create: %+v err=%v", d, err)
+	}
+	if err := s.Update(ctx, id, Data{AuthzID: "on_abc", CreatedAt: time.Now(), Epoch: 4}); err != nil {
+		t.Fatal(err)
+	}
+	if d, err := s.Get(ctx, id); err != nil || d.Epoch != 4 {
+		t.Fatalf("get after update: %+v err=%v", d, err)
+	}
+}
+
 func TestSQLGetUnknownIsNotFound(t *testing.T) {
 	s, _, _ := newSQLTestStore(t)
 	if _, err := s.Get(context.Background(), "nope"); err != ErrNotFound {

@@ -240,6 +240,31 @@ const en = {
     close: 'I saved it — close',
   },
 
+  account: {
+    title: 'Account',
+    loadFailed: 'Could not load your account',
+    username: 'Username',
+    email: 'Email',
+    noEmail: 'Not set',
+    passwordTitle: 'Change password',
+    passwordDesc: 'Changing your password signs you out on every other device. API tokens keep working.',
+    setPasswordTitle: 'Set a password',
+    setPasswordDesc: 'This account has no password yet. Once set, you can also sign in with your username or email.',
+    currentPassword: 'Current password',
+    newPassword: 'New password',
+    newPasswordHint: 'At least 8 characters.',
+    confirmPassword: 'Confirm new password',
+    tooShort: 'A password needs at least 8 characters',
+    mismatch: 'The two new passwords do not match',
+    wrongCurrent: 'The current password is incorrect',
+    rateLimited: 'Too many attempts, please try again later',
+    refused: 'The server refused this password',
+    failed: 'Could not change the password, please try again',
+    submit: 'Update password',
+    submitting: 'Updating…',
+    changed: 'Password updated. Other devices have been signed out.',
+  },
+
   identity: {
     title: 'Sign-in methods',
     descWithPassword:

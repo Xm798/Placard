@@ -204,6 +204,16 @@ func (h *Handlers) Mount(app *fiber.App) {
 	api.Get("/auth/identities", middleware.SessionOnly(), h.OIDCIdentities)
 	api.Delete("/auth/identities/:provider", middleware.SessionOnly(), h.OIDCUnlink)
 
+	// The account's own profile and password. Session-only like the identity
+	// routes. The password change runs an argon2 hash before it can answer, so
+	// it shares the per-IP cap the login route has.
+	api.Get("/account", middleware.SessionOnly(), h.AccountProfile)
+	if h.deps.AuthLimiter != nil {
+		api.Put("/account/password", middleware.SessionOnly(), h.deps.AuthLimiter, h.AccountChangePassword)
+	} else {
+		api.Put("/account/password", middleware.SessionOnly(), h.AccountChangePassword)
+	}
+
 	// OIDC login. Both are browser navigations, unauthenticated (they are in
 	// middleware.builtinSkips) and GET, so the CSRF middleware passes them as
 	// safe methods; the callback's protection is the server-side flow state it

@@ -528,7 +528,7 @@ func TestUnauthenticatedRootStillGoesToLanding(t *testing.T) {
 
 // newAccountStatusApp mounts the auth middleware with an AccountStatus seam and
 // a single protected route, so each verdict can be driven directly.
-func newAccountStatusApp(status func(ctx context.Context, userID string) (bool, error)) *fiber.App {
+func newAccountStatusApp(status func(ctx context.Context, userID string) (bool, int, error)) *fiber.App {
 	sess := &fakeSessions{data: map[string]session.Data{
 		"sid1": {AuthzID: "u_abc", DisplayName: "Alice", CreatedAt: time.Now()},
 	}}
@@ -550,7 +550,7 @@ func newAccountStatusApp(status func(ctx context.Context, userID string) (bool, 
 // Disabling an account has to reach the session cookies and PATs it already
 // issued — they are long-lived and nothing else re-checks them.
 func TestDisabledAccountRejectedOnBothChannels(t *testing.T) {
-	app := newAccountStatusApp(func(context.Context, string) (bool, error) { return false, nil })
+	app := newAccountStatusApp(func(context.Context, string) (bool, int, error) { return false, 0, nil })
 
 	req := httptest.NewRequest("GET", "/api/files", nil)
 	req.Header.Set("Sec-Fetch-Mode", "cors")
@@ -568,11 +568,32 @@ func TestDisabledAccountRejectedOnBothChannels(t *testing.T) {
 	}
 }
 
+// A session opened before the account's epoch moved is refused; a PAT, which
+// carries no epoch, is not.
+func TestStaleSessionEpochRejectedOnSessionChannelOnly(t *testing.T) {
+	app := newAccountStatusApp(func(context.Context, string) (bool, int, error) { return true, 1, nil })
+
+	req := httptest.NewRequest("GET", "/api/files", nil)
+	req.Header.Set("Sec-Fetch-Mode", "cors")
+	req.AddCookie(&http.Cookie{Name: "__Host-placard_session", Value: "sid1"})
+	resp, _ := app.Test(req)
+	if resp.StatusCode != 401 {
+		t.Errorf("stale session status = %d, want 401", resp.StatusCode)
+	}
+
+	req = httptest.NewRequest("GET", "/api/files", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	resp, _ = app.Test(req)
+	if resp.StatusCode != 200 {
+		t.Errorf("PAT status = %d, want 200", resp.StatusCode)
+	}
+}
+
 // A database blip is not a credential verdict: answering 401 would log every
 // live user out at once.
 func TestAccountStatusErrorIs503(t *testing.T) {
-	app := newAccountStatusApp(func(context.Context, string) (bool, error) {
-		return false, errors.New("database unreachable")
+	app := newAccountStatusApp(func(context.Context, string) (bool, int, error) {
+		return false, 0, errors.New("database unreachable")
 	})
 
 	req := httptest.NewRequest("GET", "/api/files", nil)
@@ -671,11 +692,11 @@ func TestShareLinkDegradesToAnonymous(t *testing.T) {
 		{"store unavailable", AuthOptions{Sessions: &fakeSessions{err: errors.New("redis down")}}},
 		{"disabled account", AuthOptions{
 			Sessions:      &fakeSessions{data: live},
-			AccountStatus: func(context.Context, string) (bool, error) { return false, nil },
+			AccountStatus: func(context.Context, string) (bool, int, error) { return false, 0, nil },
 		}},
 		{"account lookup failed", AuthOptions{
 			Sessions:      &fakeSessions{data: live},
-			AccountStatus: func(context.Context, string) (bool, error) { return false, errors.New("db down") },
+			AccountStatus: func(context.Context, string) (bool, int, error) { return false, 0, errors.New("db down") },
 		}},
 	}
 	for _, tt := range tests {

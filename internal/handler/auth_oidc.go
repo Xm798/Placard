@@ -305,6 +305,7 @@ func (h *Handlers) completeOIDCLogin(c *fiber.Ctx, pendingSID, provider string, 
 		AuthzID:     user.ID,
 		DisplayName: user.DisplayName,
 		CreatedAt:   model.Now(),
+		Epoch:       user.SessionEpoch,
 	})
 	if err != nil {
 		return apperr.Unavailable("could not open a session")

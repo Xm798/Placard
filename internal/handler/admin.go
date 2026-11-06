@@ -169,19 +169,13 @@ func (h *Handlers) AdminResetPassword(c *fiber.Ctx) error {
 		return apperr.Internal("could not hash password")
 	}
 
-	rows, err := h.deps.Users.SetPasswordHash(ctx, target, hash)
-	if err != nil {
+	_, err = h.deps.Users.SetPasswordRevokingSessions(ctx, target, hash)
+	switch {
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		return apperr.NotFound("not found")
+	case err != nil:
 		return apperr.Internal("could not update account")
 	}
-	if rows == 0 {
-		return apperr.NotFound("not found")
-	}
-	// A reset changes the password and nothing else. Sessions opened with the
-	// old one survive it: the session store is keyed by session id and cannot
-	// be swept by account, so an operator dealing with a stolen credential
-	// deletes the account rather than resetting it. Disabling refuses every
-	// existing session while the flag is set, but re-enabling revives them.
-	//
 	// EnsureLocal is what makes the new password a login method on an account
 	// provisioned through a provider, which carries no local credential row.
 	if err := h.deps.Identities.EnsureLocal(ctx, target); err != nil {

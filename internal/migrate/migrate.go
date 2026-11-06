@@ -36,9 +36,9 @@ func Models() []interface{} {
 // HistoryTable is where gormigrate records the ids it has applied.
 const HistoryTable = "migrations"
 
-// migrations is the ordered schema history. Until the first release, 0001 is
-// edited in place rather than followed by a 0002: there is no deployed database
-// to carry forward, so a schema change belongs in the initial migration.
+// migrations is the ordered schema history. 0001 is the schema as of v0.1.0;
+// every change since is a migration of its own, because databases created by
+// that release have already recorded 0001 and will never run it again.
 func migrations() []*gormigrate.Migration {
 	return []*gormigrate.Migration{
 		{
@@ -53,6 +53,20 @@ func migrations() []*gormigrate.Migration {
 					}
 				}
 				return nil
+			},
+		},
+		{
+			ID: "0002_session_epoch",
+			// AutoMigrate only adds what is missing, so this is a no-op on a
+			// database whose 0001 already created the columns.
+			Migrate: func(tx *gorm.DB) error {
+				return tx.AutoMigrate(&model.User{}, &model.Session{})
+			},
+			Rollback: func(tx *gorm.DB) error {
+				if err := tx.Migrator().DropColumn(&model.Session{}, "Epoch"); err != nil {
+					return err
+				}
+				return tx.Migrator().DropColumn(&model.User{}, "SessionEpoch")
 			},
 		},
 	}

@@ -12,6 +12,7 @@ import TokenPlaintextModal from '../components/TokenPlaintextModal'
 import ExpirySegmented from '../components/ExpirySegmented'
 import Panel from '../components/Panel'
 import IdentitySection from '../components/IdentitySection'
+import AccountSection from '../components/AccountSection'
 import { visibilityOptions } from '../lib/visibility'
 
 export default function SettingsPage() {
@@ -96,8 +97,10 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-10 min-w-0">
+        <AccountSection index={1} />
+
         <Panel
-          index={1}
+          index={2}
           title={t('settings.tokenCardTitle')}
           tone="pop"
           action={
@@ -126,7 +129,7 @@ export default function SettingsPage() {
           </div>
         </Panel>
 
-        <Panel index={2} title={t('settings.defaultVisibilityTitle')} titleId="default-visibility-label" tone="sun">
+        <Panel index={3} title={t('settings.defaultVisibilityTitle')} titleId="default-visibility-label" tone="sun">
           <div className="px-5 py-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:justify-between">
             <p className="text-soft text-sm leading-relaxed max-w-md">{t('settings.defaultVisibilityDesc')}</p>
             <ExpirySegmented
@@ -138,7 +141,7 @@ export default function SettingsPage() {
           </div>
         </Panel>
 
-        <IdentitySection index={3} />
+        <IdentitySection index={4} />
       </div>
 
       <TokenCreateModal

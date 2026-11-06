@@ -298,23 +298,33 @@ func (h *Handlers) claimBootstrap(tx *gorm.DB) error {
 // startSession mints the login session, sets the cookie and returns the account
 // body both register and login answer with.
 func (h *Handlers) startSession(c *fiber.Ctx, user *model.User, status int) error {
-	if h.deps.Sessions == nil {
-		return apperr.Unavailable()
-	}
 	// A password account has no provider picture, so this resolves to the
 	// Gravatar for its address or to nothing at all. Detached and best-effort:
 	// see cacheAvatarAsync.
 	h.refreshAvatar(user, "")
+	if err := h.openSession(c, user); err != nil {
+		return err
+	}
+	return c.Status(status).JSON(accountDTO(user))
+}
+
+// openSession mints a login session for user on its current session epoch and
+// sets the cookie.
+func (h *Handlers) openSession(c *fiber.Ctx, user *model.User) error {
+	if h.deps.Sessions == nil {
+		return apperr.Unavailable()
+	}
 	sid, err := h.deps.Sessions.Create(c.UserContext(), session.Data{
 		AuthzID:     user.ID,
 		DisplayName: user.DisplayName,
 		CreatedAt:   model.Now(),
+		Epoch:       user.SessionEpoch,
 	})
 	if err != nil {
 		return apperr.Unavailable("could not open a session")
 	}
 	h.setSessionCookie(c, sid, h.sessionCookieMaxAge())
-	return c.Status(status).JSON(accountDTO(user))
+	return nil
 }
 
 // sessionCookieMaxAge is the cookie's lifetime: the session's absolute cap, so
