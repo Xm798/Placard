@@ -52,6 +52,7 @@ checksum:
 
 changelog:
   use: github
+  format: "{{ .SHA }}: {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}"
   filters:
     exclude:
       - '^docs:'
